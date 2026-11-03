@@ -1,7 +1,7 @@
 {
   "name": "EU4 Gazetteer Test",
   "mod_dir": "eu4_gazetteer_test",
-  "version": "0.13",
+  "version": "0.14",
   "supported_version": "v1.37.*",
   "depends": [],
   "zh_mods": ["Chinese Language Mod for 1.37"],
