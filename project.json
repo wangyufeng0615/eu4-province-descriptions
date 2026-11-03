@@ -1,0 +1,10 @@
+{
+  "name": "EU4 Gazetteer Test",
+  "mod_dir": "eu4_gazetteer_test",
+  "version": "0.10",
+  "supported_version": "v1.37.*",
+  "depends": ["Bigger UI V1.37"],
+  "zh_mods": ["Chinese Language Mod for 1.37"],
+  "button_pos": [450, -2],
+  "base_gui": "D:/SteamLibrary/steamapps/workshop/content/236850/788906833/interface/provinceview.gui"
+}
