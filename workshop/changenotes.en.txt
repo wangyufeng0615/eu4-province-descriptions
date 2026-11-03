@@ -1,0 +1,2 @@
+1.0.0
+First public release: English and Chinese descriptions for all 3,272 land provinces.

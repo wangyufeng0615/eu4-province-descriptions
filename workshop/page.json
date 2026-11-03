@@ -1,0 +1,6 @@
+{
+  "titles": {"english": "Descriptions for Every Province", "schinese": "所有省份的描述"},
+  "descriptions": {"english": "workshop/description.en.txt", "schinese": "workshop/description.zh-CN.txt"},
+  "cover_images": {"english": "workshop/assets/cover.jpg", "schinese": "workshop/assets/cover.zh-CN.jpg"},
+  "tags": ["Historical", "Interface", "Translation"]
+}

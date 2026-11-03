@@ -1,12 +1,33 @@
 {
-  "name": "EU4 Gazetteer Test",
-  "mod_dir": "eu4_gazetteer_test",
-  "version": "0.14",
+  "name": "Descriptions for Every Province",
+  "name_zh": "所有省份的描述",
+  "mod_dir": "province_descriptions",
+  "version": "0.15.0",
+  "game_id": "eu4",
+  "steam_app_id": 236850,
+  "publishedfileid": null,
+  "steam_api_dll": "D:/SteamLibrary/steamapps/common/Europa Universalis IV/steam_api64.dll",
   "supported_version": "v1.37.*",
+  "game_version_checked": "v1.37.5.0",
+  "tags": [
+    "Historical",
+    "Interface",
+    "Translation"
+  ],
+  "licenses": {
+    "tools": "MIT",
+    "descriptions": "CC-BY-SA-4.0"
+  },
   "depends": [],
-  "zh_mods": ["Chinese Language Mod for 1.37"],
-  "button_pos": [450, -2],
-  "base_gui": "D:/SteamLibrary/steamapps/common/Europa Universalis IV/interface/provinceview.gui",
+  "zh_mods": [
+    "Chinese Language Mod for 1.37"
+  ],
+  "button_pos": [
+    450,
+    -2
+  ],
+  "base_gui": "assets/vanilla/provinceview.gui",
+  "base_gui_sha256": "4cdd2c08139ed3daebcca777a7768f9d36e51e9bb6e58fe826579cd437c4b75f",
   "gui_file": "00_eu4lg_provinceview.gui",
-  "compat": []
+  "thumbnail_file": "workshop/assets/thumbnail.png"
 }
