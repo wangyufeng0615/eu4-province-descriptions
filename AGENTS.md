@@ -31,6 +31,8 @@ python -B tools\build.py --install --debug    :: 提示框底部多一行中文�
 
 装好后要完全退出再重开 EU4 才会读到新文件。同步脚本会把新数据提交到本目录的 Git，方便回退。2026-11-03 起模组目录名从测试期的 `eu4_gazetteer_test` 改为 `province_descriptions`；旧的测试副本还在模组目录里，播放集里不要两个同时启用。
 
+**本地副本和订阅版不能同名共存**（2026-11-04 实测）：`mod` 目录里同时有本地 `province_descriptions.mod` 和订阅版 `ugc_3833082096.mod`、两者 `name` 都是 "Descriptions for Every Province" 时，播放集里只启用订阅版，游戏也一个文件都不加载（日志里省份窗口仍是原版定义，按钮不出现）；把本地登记文件挪出 `mod` 目录后订阅版立即正常。测订阅版前先移走本地登记文件；`--install` 会重新生成它。1.0.0 的 `descriptor.mod` 还缺 `remote_file_id`（建条目前打的包），1.0.1 补上了，但那不是按钮消失的原因。
+
 ## 检查与构建
 
 ```bat
