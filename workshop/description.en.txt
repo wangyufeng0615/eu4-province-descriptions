@@ -2,12 +2,12 @@
 
 Vanilla EU4 has no province descriptions at all.
 
-This mod adds an English and Chinese description to all [b]3,272[/b] land provinces: where the province lies, what it looked like at the 1444 start, and what happened there up to 1821.
+This mod adds a description to all [b]3,272[/b] land provinces: where the province lies, what it looked like at the 1444 start, and what happened there up to 1821.
 
-Open any province and hover the scroll button to the right of the terrain picture.
+Open any province and hover the scroll button to the right of the terrain picture. For uncolonized provinces the button sits at the right end of the picture.
 
 [list]
-[*]English and Chinese in one mod: Chinese shows automatically when the [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2976470733]Chinese Language Mod for 1.37[/url] is enabled; French, German and Spanish games show English
+[*]French, German and Spanish games show the English text
 [*]Works with and without [url=https://steamcommunity.com/sharedfiles/filedetails/?id=788906833]Bigger UI[/url]
 [*]Only adds text; no gameplay changes
 [*]Can be added to an existing save
@@ -18,7 +18,7 @@ Every description is written from published sources, mainly Wikipedia in English
 [h2]Good to know[/h2]
 [list]
 [*]Not achievement compatible: the mod adds a scripted button, which changes the game checksum.
-[*]With Bigger UI enabled, its 20 province-window hotkeys do not work; everything else in Bigger UI is unaffected.
+[*]With Bigger UI enabled, the hotkeys it adds to the province window and the colonization panel do not work; everything else in Bigger UI is unaffected.
 [*]The button is on the Province tab of the province window, not the State tab.
 [*]Descriptions cover 1444–1821 and do not change with the start date.
 [/list]

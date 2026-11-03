@@ -1,8 +1,8 @@
 # Descriptions for Every Province
 
-English and Simplified Chinese descriptions for all 3,272 land provinces of Europa Universalis IV. Open a province and hover the scroll button to the right of the terrain picture.
+English and Simplified Chinese descriptions for all 3,272 land provinces of Europa Universalis IV. Open a province and hover the scroll button to the right of the terrain picture (for uncolonized provinces, at the right end of the picture).
 
-Chinese is shown when the Chinese Language Mod for 1.37 (Workshop 2976470733) is enabled; otherwise English. Works with or without Bigger UI. Not achievement compatible, because the scripted button changes the checksum.
+Works with or without Bigger UI. Not achievement compatible, because the scripted button changes the checksum.
 
 Manual install: extract the release ZIP into `Documents\Paradox Interactive\Europa Universalis IV\mod\`, so that you have the `province_descriptions` folder and `province_descriptions.mod` side by side, then enable the mod in the launcher. Do not enable a manual copy and the Workshop copy together.
 
