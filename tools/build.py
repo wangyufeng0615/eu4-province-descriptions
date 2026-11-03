@@ -7,11 +7,14 @@ python -B tools\\build.py --install --debug   # 提示框底部多一行中文�
 数据由研究工程导出（研究工程 tools/sync_workshop.sh 在 MacBook 上一步做完导出、拷贝、构建、安装）。
 模组名、版本、依赖、按钮位置、底稿 GUI 路径都在 project.json。
 
-省份窗口文件 interface/provinceview.gui 在 EU4 里是整份覆盖，谁后加载用谁的，所以生成两个模组：
-- 主模组：以原版 provinceview.gui 为底稿加按钮，单独就能用；依赖里写 Bigger UI，只为装了它时排在它后面。
-- 兼容补丁（project.json 的 compat）：只有一份以 Bigger UI 的 provinceview.gui 为底稿加按钮的文件，
-  依赖 Bigger UI 和主模组，排在最后，让 Bigger UI 给省份窗口加的快捷键保留下来。
-两份底稿的布局完全相同（2026-11-03 比对：只差 20 行快捷键、一个列表高度和一处编码），按钮坐标通用。
+省份窗口：不覆盖 interface/provinceview.gui（那个文件谁后加载用谁的，会和 Bigger UI 等界面模组互相顶掉），
+而是把原版省份窗口定义连同按钮写进 interface/00_eu4lg_provinceview.gui。游戏遇到同名窗口用先读到的定义，
+00_ 排在 provinceview.gui 前面，所以装不装 Bigger UI 按钮都在（2026-11-03 在游戏里验证）。代价是装了 Bigger UI 时，
+它给省份窗口加的 20 个键盘快捷键不生效；Bigger UI 和原版的这个文件布局完全相同，只差这些快捷键、一个列表高度和一处编码。
+project.json 的 compat 可选，用来另外生成"某界面模组底稿＋按钮"的兼容补丁，目前不用。
+
+EU4 英文界面只能显示 Windows-1252 字符：英文正文里的 ō、ł、ı、ʻ 等在生成时换成最接近的可显示字母，
+希腊文、汉字等直接去掉（fold_latin1）；中文正文里夹的这类拉丁字母同样处理。
 
 中英文都写进 l_english：中文按中文模组的编码存（tools/eu4zh.py），游戏里用 is_mod_active 检测中文模组，
 启用时显示中文，否则显示英文。l_french / l_german / l_spanish 暂时放英文正文。
@@ -20,9 +23,11 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
+import unicodedata
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -30,6 +35,54 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import eu4zh  # noqa: E402
 
 MOD_ROOT = Path.home() / 'Documents' / 'Paradox Interactive' / 'Europa Universalis IV' / 'mod'
+
+
+LATIN_FALLBACK = {'ł': 'l', 'Ł': 'L', 'đ': 'd', 'Đ': 'D', 'ı': 'i', 'ə': 'e', 'Ə': 'E', 'ŋ': 'ng', 'Ŋ': 'Ng',
+                  'ʌ': 'u', 'ɬ': 'l', 'ħ': 'h', 'Ħ': 'H', 'ŧ': 't', 'ʻ': "'", 'ʼ': "'", 'ʿ': "'", 'ʾ': "'", 'ˀ': "'",
+                  'ʔ': "'", 'ː': '', 'ʷ': 'w', 'ʰ': 'h', 'ß': 'ss'}
+GREEK = {'α': 'a', 'β': 'b', 'γ': 'g', 'δ': 'd', 'ε': 'e', 'ζ': 'z', 'η': 'e', 'θ': 'th', 'ι': 'i', 'κ': 'k',
+         'λ': 'l', 'μ': 'm', 'ν': 'n', 'ξ': 'x', 'ο': 'o', 'π': 'p', 'ρ': 'r', 'σ': 's', 'ς': 's', 'τ': 't',
+         'υ': 'y', 'φ': 'ph', 'χ': 'ch', 'ψ': 'ps', 'ω': 'o', 'ά': 'a', 'έ': 'e', 'ή': 'e', 'ί': 'i', 'ό': 'o',
+         'ύ': 'y', 'ώ': 'o'}
+
+
+def _ok(s, latin1_only):
+    """英文界面能显示 Windows-1252（游戏日志证实 š、ž、弯引号、长破折号不报错）；
+    中文模组把码位大于 255 的字符都当汉字编码，所以中文正文里的西文字母只能留 Latin-1。"""
+    if latin1_only:
+        return all(ord(c) <= 0xFF for c in s)
+    try:
+        s.encode('cp1252')
+        return True
+    except UnicodeEncodeError:
+        return False
+
+
+def _fold_char(ch, latin1_only=False):
+    if _ok(ch, latin1_only):
+        return ch
+    if ch in LATIN_FALLBACK:
+        return LATIN_FALLBACK[ch]
+    if ch.lower() in GREEK:
+        g = GREEK[ch.lower()]
+        return g.capitalize() if ch.isupper() else g
+    base = ''.join(c for c in unicodedata.normalize('NFKD', ch) if not unicodedata.combining(c))
+    return base if _ok(base, latin1_only) else ''
+
+
+def fold_latin1(s):
+    """英文正文：把 EU4 英文界面显示不了的字符换成最接近的 Windows-1252 字符，换不了的去掉。"""
+    out = ''.join(_fold_char(c) for c in unicodedata.normalize('NFC', s))
+    out = re.sub(r'\(\s*[,;]?\s*\)', '', out)      # 去掉只剩空壳的括号
+    out = re.sub(r'[ \t]{2,}', ' ', out)
+    return re.sub(r' ([,.;:])', r'\1', out)
+
+
+def fold_latin_in_zh(s):
+    """中文正文：只处理夹在里面的拉丁扩展字母和修饰符号，汉字和中文标点原样交给 eu4zh 编码。"""
+    def f(m):
+        return ''.join(_fold_char(c, latin1_only=True) for c in m.group(0))
+    return re.sub(r'[\u0100-\u02ff\u0300-\u036f\u1e00-\u1eff\u0370-\u03ff]+', f, unicodedata.normalize('NFC', s))
 
 
 def q(s):
@@ -41,7 +94,7 @@ def paras(s):
 
 
 def loc_text(text, zh):
-    enc = eu4zh.encode if zh else (lambda s: s)
+    enc = (lambda s: eu4zh.encode(fold_latin_in_zh(s))) if zh else fold_latin1
     return q('\\n\\n'.join(enc(p.replace('\n', ' ')) for p in paras(text)))
 
 
@@ -143,11 +196,12 @@ def build(cfg, rows, out, base_gui, debug):
                                    ('eu4lg_debug_fake_no', 'always = yes')])
     (out / 'customizable_localization' / 'eu4lg.txt').write_text('\n'.join(cl) + '\n', encoding='utf-8', newline='\n')
     (out / 'common' / 'custom_gui' / 'eu4lg.txt').write_text(
+        # 不写 trigger：写了 always = yes，提示框底部会多出一行"✓ 总是"
         'custom_button = {\n\tname = eu4lg_button\n\tpotential = { always = yes }\n'
-        '\ttrigger = { always = yes }\n\ttooltip = eu4lg_button_tt\n}\n', encoding='utf-8', newline='\n')
+        '\ttooltip = eu4lg_button_tt\n}\n', encoding='utf-8', newline='\n')
 
-    (out / 'interface' / 'provinceview.gui').write_text(add_button(base_gui, *cfg['button_pos']), encoding='utf-8',
-                                                        errors='surrogateescape', newline='')
+    (out / 'interface' / cfg['gui_file']).write_text(add_button(base_gui, *cfg['button_pos']), encoding='utf-8',
+                                                     errors='surrogateescape', newline='')
     shutil.copyfile(ROOT / 'assets' / 'eu4lg_button.dds', out / 'gfx' / 'interface' / 'eu4lg_button.dds')
     (out / 'interface' / 'eu4lg.gfx').write_text(
         'spriteTypes = {\n\tspriteType = {\n\t\tname = "GFX_eu4lg_button"\n'
