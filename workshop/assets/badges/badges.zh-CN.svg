@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="514" height="40" viewBox="0 0 514 40">
+<defs><clipPath id="b0"><rect x="0" width="243" height="40" rx="5"/></clipPath></defs>
+<g clip-path="url(#b0)"><path fill="#34383d" d="M0 0h144v40H0z"/><path fill="#238636" d="M144 0h99v40H144z"/></g>
+<text x="41.494" y="27.215" font-family="Microsoft YaHei" font-weight="700" font-size="20.2532" fill="white">覆盖率</text>
+<text x="157.778" y="29.683" font-family="Microsoft YaHei" font-weight="700" font-size="25.3968" fill="white">100%</text>
+<defs><clipPath id="b1"><rect x="255" width="259" height="40" rx="5"/></clipPath></defs>
+<g clip-path="url(#b1)"><path fill="#34383d" d="M255 0h118v40H255z"/><path fill="#1f6feb" d="M373 0h141v40H373z"/></g>
+<text x="272.994" y="27.179" font-family="Microsoft YaHei" font-weight="700" font-size="20.5128" fill="white">支持语言</text>
+<text x="388.994" y="27.179" font-family="Microsoft YaHei" font-weight="700" font-size="20.5128" fill="white">英文 + 简中</text>
+</svg>

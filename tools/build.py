@@ -376,7 +376,9 @@ def page_counts(root, n):
                 'workshop/changenotes.zh-CN.txt', 'workshop/player-readme.en.md', 'workshop/player-readme.zh-CN.md'):
         p = root / rel
         if p.exists():
-            nums = {int(x.replace(',', '')) for x in re.findall(r'\b\d{1,3}(?:,\d{3})+\b', p.read_text(encoding='utf-8'))}
+            # 推荐其他模组的行（带别的工坊条目链接）里是那个模组的数字，不参与核对
+            text = '\n'.join(l for l in p.read_text(encoding='utf-8').split('\n') if 'sharedfiles/filedetails/?id=' not in l)
+            nums = {int(x.replace(',', '')) for x in re.findall(r'\b\d{1,3}(?:,\d{3})+\b', text)}
             if nums and nums != {n}:
                 bad.append(f'{rel}: {sorted(nums)}')
     return bad

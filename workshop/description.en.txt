@@ -1,4 +1,5 @@
 [h1]A history for every province on the map[/h1]
+[img]https://images.steamusercontent.com/ugc/16549542523539939086/92623A5CB15405E0B961E4CEF23DF324462C8D45/[/img]
 
 Vanilla EU4 has no province descriptions at all.
 
@@ -25,7 +26,7 @@ Every description is written from published sources, mainly Wikipedia in English
 
 [h2]My other mods[/h2]
 [list]
-[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3830305546][b]Descriptions for Every Tile[/b][/url] (Europa Universalis V): descriptions for all 28,316 tiles on the EU5 map. Achievement compatible.
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3830305546][b]Descriptions for Every Tile[/b][/url] (Europa Universalis V): descriptions for all 28,316 tiles on the EU5 map. Over 1,700 subscribers in its first four days, and achievement compatible.
 [/list]
 
 [h2]Update history[/h2]

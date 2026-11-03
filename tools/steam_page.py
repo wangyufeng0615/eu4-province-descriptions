@@ -3,6 +3,7 @@
 python -B tools/steam_page.py --output dist/<新记录>.json                 # 只读：两种语言的标题、描述、封面、可见性
 python -B tools/steam_page.py --descriptions --output dist/<新记录>.json  # 提交两种语言的标题和描述（每种语言标题描述一起提交）
 python -B tools/steam_page.py --assets --output dist/<新记录>.json        # 更新主封面和画廊（page.json 的 gallery：中文封面、中英文效果图）
+python -B tools/steam_page.py --host-badges --output dist/<新记录>.json   # 徽章 PNG 存进 Steam 云并共享，直链记进 page.json 的 description_badges
 
 游戏、条目编号和 steam_api64.dll 路径都读 project.json（steam_app_id、publishedfileid、steam_api_dll）；
 publishedfileid 还是 null（工坊条目还没建）时直接拒绝。不读凭据，不改可见性，不建新条目，不接受条款。
@@ -14,6 +15,8 @@ import json
 import os
 from pathlib import Path
 import time
+import hashlib
+import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
 _PROJECT = json.loads((ROOT / 'project.json').read_text(encoding='utf-8'))
@@ -136,6 +139,36 @@ class Steam:
                 assert self.ug('AddItemPreviewFile', B, [U64,S,I], handle, str(path).encode(), 0)
         self.submit(handle)
 
+    def host_badges(self):
+        """把两张徽章 PNG 存进 Steam 云并公开共享，拿到图片直链给描述里的 [img] 用；不占画廊（EU5 地块的做法）。"""
+        storage = self.bind('SteamAPI_SteamRemoteStorage_v016', P)()
+        if not storage:
+            raise RuntimeError('Steam Remote Storage is unavailable')
+        results = {}
+        for language, suffix in [('english', 'en'), ('schinese', 'zh-CN')]:
+            source = ROOT/f'workshop/assets/badges/badges.{suffix}.png'
+            content = source.read_bytes()
+            sha256 = hashlib.sha256(content).hexdigest()
+            filename = f'eu4_description_badges_{suffix}_{sha256[:16]}.png'.encode()
+            if self.bind('SteamAPI_ISteamRemoteStorage_FileExists', B, P, S)(storage, filename):
+                size = self.bind('SteamAPI_ISteamRemoteStorage_GetFileSize', I, P, S)(storage, filename)
+                buffer = C.create_string_buffer(size)
+                count = self.bind('SteamAPI_ISteamRemoteStorage_FileRead', I, P, S, P, I)(storage, filename, buffer, size)
+                if size != len(content) or count != size or buffer.raw != content:
+                    raise RuntimeError('Existing badge storage file does not match')
+            else:
+                buffer = C.create_string_buffer(content)
+                if not self.bind('SteamAPI_ISteamRemoteStorage_FileWrite', B, P, S, P, I)(storage, filename, buffer, len(content)):
+                    raise RuntimeError('Could not store the badge image in Steam Cloud')
+            shared = self.wait(self.bind('SteamAPI_ISteamRemoteStorage_FileShare', U64, P, S)(storage, filename), ShareResult, 1307)
+            url = f'https://images.steamusercontent.com/ugc/{shared.file}/{hashlib.sha1(content).hexdigest().upper()}/'
+            with urllib.request.urlopen(urllib.request.Request(url, headers={'Cache-Control': 'no-cache'}), timeout=25) as response:
+                if response.status != 200 or response.read() != content:
+                    raise RuntimeError('Shared badge CDN content did not match')
+            results[language] = {'cloud_file': filename.decode(), 'ugc_handle': shared.file, 'url': url,
+                                 'sha256': sha256, 'source': str(source.relative_to(ROOT).as_posix())}
+        return results
+
     def description(self, lang, text, title):
         handle = self.ug('StartItemUpdate', U64, [U32,U64], APP, ITEM)
         assert self.ug('SetItemUpdateLanguage', B, [U64,S], handle, lang.encode())
@@ -147,6 +180,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--assets', action='store_true')
     parser.add_argument('--descriptions', action='store_true')
+    parser.add_argument('--host-badges', action='store_true', help='只把两张徽章 PNG 存进 Steam 云并共享，打印直链')
     parser.add_argument('--content', help='Optional built mod folder, only with --assets')
     parser.add_argument('--output', required=True)
     args = parser.parse_args()
@@ -162,7 +196,7 @@ def main():
         output.write_text(json.dumps({'before':before},ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
         if args.assets:
             steam.assets(before['english'], args.content)
-        hosted = None
+        hosted = steam.host_badges() if args.host_badges else None
         if args.descriptions:
             for lang, file in [('english','description.en.txt'),('schinese','description.zh-CN.txt')]:
                 steam.description(lang, (ROOT/'workshop'/file).read_text(encoding='utf-8'), titles[lang])

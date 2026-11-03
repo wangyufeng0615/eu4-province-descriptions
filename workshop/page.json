@@ -20,5 +20,27 @@
     "workshop/assets/cover.zh-CN.jpg",
     "workshop/assets/gallery-en.jpg",
     "workshop/assets/gallery-zh-CN.jpg"
-  ]
+  ],
+  "description_badges": {
+    "english": {
+      "cloud_file": "eu4_description_badges_en_7d4a9501b971733d.png",
+      "ugc_handle": 16549542523539939086,
+      "url": "https://images.steamusercontent.com/ugc/16549542523539939086/92623A5CB15405E0B961E4CEF23DF324462C8D45/",
+      "sha256": "7d4a9501b971733d5a86eb675a7c674c00df3711110aedb8d7f5c635615cc79c",
+      "source": "workshop/assets/badges/badges.en.png",
+      "hosting": "Steam RemoteStorage FileShare",
+      "gallery_entry": false,
+      "note": "正文 [img] 引用这个直链；不要删云文件"
+    },
+    "schinese": {
+      "cloud_file": "eu4_description_badges_zh-CN_8572f1a7913237fc.png",
+      "ugc_handle": 10401395646971950767,
+      "url": "https://images.steamusercontent.com/ugc/10401395646971950767/13FD0974D4D42C2C65AD06B0A23A1D1EF3F58FAE/",
+      "sha256": "8572f1a7913237fc5fffeee8d3e1528c589f72b733bd0a454042e232865803bb",
+      "source": "workshop/assets/badges/badges.zh-CN.png",
+      "hosting": "Steam RemoteStorage FileShare",
+      "gallery_entry": false,
+      "note": "正文 [img] 引用这个直链；不要删云文件"
+    }
+  }
 }

@@ -130,6 +130,18 @@ class TestBuild(Fixture):
             build.install(cfg, out / cfg['mod_dir'], mods)
 
 
+class TestPageCounts(unittest.TestCase):
+    def test_other_mod_lines_are_ignored(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / 'workshop').mkdir()
+            (root / 'workshop' / 'description.en.txt').write_text(
+                'All [b]3,272[/b] provinces.\n[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=1]Other[/url]: 28,316 tiles, 1,700 subscribers.\n',
+                encoding='utf-8')
+            self.assertEqual(build.page_counts(root, 3272), [])
+            self.assertEqual(len(build.page_counts(root, 3000)), 1)
+
+
 class TestRelease(unittest.TestCase):
     def test_versions_and_changelog(self):
         self.assertEqual(release.parse_version('1.2.3'), (1, 2, 3))
