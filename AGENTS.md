@@ -1,6 +1,6 @@
 # 所有省份的描述（Descriptions for Every Province）：发布工程
 
-这里把研究工程写好的省份介绍构建成 EU4 模组，装进本机游戏做实验，也从这里发布到创意工坊。模组目录名 `province_descriptions`，工坊条目还没建（`project.json` 的 `publishedfileid` 为 null）。正文、来源和写作规则都在研究工程，这里不改正文。
+这里把研究工程写好的省份介绍构建成 EU4 模组，装进本机游戏做实验，也从这里发布到创意工坊。模组目录名 `province_descriptions`，工坊条目 [3833082096](https://steamcommunity.com/sharedfiles/filedetails/?id=3833082096)，2026-11-04 由作者在 EU4 启动器建好（私密），中英文标题、描述和封面随后用 `tools/steam_page.py` 补齐；以后的更新不再开启动器，按下面「发布」第 4 步走。在桌面会话里跑 Steam 工具时用 `wscript` 包一层隐藏窗口（`Run ..., 0, True`），否则 Windows 终端会弹窗挡住游戏。正文、来源和写作规则都在研究工程，这里不改正文。
 
 ## 三处位置
 
