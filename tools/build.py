@@ -3,7 +3,7 @@
 python -B tools/build.py --check                      # 只检查数据和配置
 python -B tools/build.py --output dist/<新目录>        # 构建模组文件夹、ZIP 和构建回执（目录必须是新的）
 python -B tools/build.py --verify dist/<目录>          # 按当前源文件重算，核对已构建的文件夹、ZIP 和回执
-python -B tools/build.py --install [--debug]          # 开发用：构建到 dist/dev 并装进本机 EU4 模组目录
+python -B tools/build.py --install [--debug]          # 开发用：构建到 dist/dev，以「<模组名> (dev)」装进本机 EU4 模组目录
 python -B tools/build.py --check --game-root "<EU4 安装目录>"   # 另外核对原版省份窗口有没有随游戏更新变化
 
 数据由研究工程导出（研究工程 tools/sync_workshop.sh 在 MacBook 上一步做完导出、拷贝、构建、安装）。
@@ -475,26 +475,34 @@ def game_running():
     return 'eu4.exe' in r.stdout.lower()
 
 
+def dev_config(cfg):
+    """本机开发安装用另一个名字和目录：和订阅版同名时，游戏不加载订阅版（2026-11-04 实测）。不带工坊编号。"""
+    return {**cfg, 'name': f'{cfg["name"]} (dev)', 'mod_dir': f'{cfg["mod_dir"]}_dev', 'publishedfileid': None}
+
+
 def install(cfg, src, mod_root=MOD_ROOT):
-    """装进 EU4 用户模组目录：先写临时目录、核对哈希，再整体替换；只替换本模组自己的旧副本。"""
-    name = cfg['mod_dir']
+    """装进 EU4 用户模组目录（开发副本，名字带 (dev)）：先写临时目录、核对哈希，再整体替换；只替换本模组自己的旧开发副本。"""
+    dev = dev_config(cfg)
+    name = dev['mod_dir']
     dst, tmp, old = mod_root / name, mod_root / f'.{name}.new', mod_root / f'.{name}.old'
-    if dst.exists() and not (dst / 'descriptor.mod').read_text(encoding='utf-8').startswith(f'name="{cfg["name"]}"'):
-        raise ValueError(f'{dst} 已存在但不是本模组，不替换')
+    if dst.exists() and not (dst / 'descriptor.mod').read_text(encoding='utf-8').startswith(f'name="{dev["name"]}"'):
+        raise ValueError(f'{dst} 已存在但不是本模组的开发副本，不替换')
     for p in (tmp, old):
         if p.exists():
             shutil.rmtree(p)
     shutil.copytree(src, tmp)
-    if tree_digests(src) != tree_digests(tmp):
+    (tmp / 'descriptor.mod').write_text(descriptor(dev), encoding='utf-8', newline='\n')
+    same = lambda d: {k: v for k, v in tree_digests(d).items() if k != 'descriptor.mod'}
+    if same(src) != same(tmp):
         raise RuntimeError('临时目录哈希不一致，没有替换')
     if dst.exists():
         os.replace(dst, old)
     os.replace(tmp, dst)
     shutil.rmtree(old, ignore_errors=True)
-    (mod_root / f'{name}.mod').write_text(descriptor(cfg, f'mod/{name}'), encoding='utf-8', newline='\n')
+    (mod_root / f'{name}.mod').write_text(descriptor(dev, f'mod/{name}'), encoding='utf-8', newline='\n')
     n = len(tree_digests(dst))
-    print(f'已装进 {dst}，{n} 个文件哈希一致。' + ('EU4 正在运行，要完全退出再重开才会生效。' if game_running()
-                                                else '启动 EU4 后在播放集里启用。'))
+    print(f'已装进 {dst}（播放集里叫「{dev["name"]}」，和订阅版不要同时启用），{n} 个文件核对一致。'
+          + ('EU4 正在运行，要完全退出再重开才会生效。' if game_running() else '启动 EU4 后在播放集里启用。'))
     return dst
 
 

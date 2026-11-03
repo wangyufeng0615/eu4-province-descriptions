@@ -25,13 +25,13 @@ tools/sync_workshop.sh --debug                                                  
 
 ```bat
 cd /d V:\paradox-mods\eu4-provinces\workshop
-python -B tools\build.py --install            :: 构建到 dist\dev 并装进 文档\Paradox Interactive\Europa Universalis IV\mod
+python -B tools\build.py --install            :: 构建到 dist\dev，以「Descriptions for Every Province (dev)」装进 文档\Paradox Interactive\Europa Universalis IV\mod\province_descriptions_dev
 python -B tools\build.py --install --debug    :: 提示框底部多一行中文模组检测结果
 ```
 
-装好后要完全退出再重开 EU4 才会读到新文件。同步脚本会把新数据提交到本目录的 Git，方便回退。2026-11-03 起模组目录名从测试期的 `eu4_gazetteer_test` 改为 `province_descriptions`；旧的测试副本还在模组目录里，播放集里不要两个同时启用。
+装好后要完全退出再重开 EU4 才会读到新文件。同步脚本会把新数据提交到本目录的 Git，方便回退。2026-11-04 起本机开发安装（`build.py --install`、`release.py --install`）一律装成开发副本：名字带 " (dev)"、目录 `province_descriptions_dev`、不带工坊编号；测试期的 `eu4_gazetteer_test` 和旧的同名本地副本 `province_descriptions` 已删除。播放集里开发副本和订阅版只启用一个。
 
-**本地副本和订阅版不能同名共存**（2026-11-04 实测）：`mod` 目录里同时有本地 `province_descriptions.mod` 和订阅版 `ugc_3833082096.mod`、两者 `name` 都是 "Descriptions for Every Province" 时，播放集里只启用订阅版，游戏也一个文件都不加载（日志里省份窗口仍是原版定义，按钮不出现）；把本地登记文件挪出 `mod` 目录后订阅版立即正常。测订阅版前先移走本地登记文件；`--install` 会重新生成它。1.0.0 的 `descriptor.mod` 还缺 `remote_file_id`（建条目前打的包），1.0.1 补上了，但那不是按钮消失的原因。
+**本地副本和订阅版不能同名共存**（2026-11-04 实测）：`mod` 目录里同时有本地 `province_descriptions.mod` 和订阅版 `ugc_3833082096.mod`、两者 `name` 都是 "Descriptions for Every Province" 时，播放集里只启用订阅版，游戏也一个文件都不加载（日志里省份窗口仍是原版定义，按钮不出现）；把本地登记文件挪出 `mod` 目录后订阅版立即正常。所以开发安装改成了带 " (dev)" 的名字（`build.py` 的 `dev_config`），不再生成同名副本。1.0.0 的 `descriptor.mod` 还缺 `remote_file_id`（建条目前打的包），1.0.1 补上了，但那不是按钮消失的原因。
 
 ## 检查与构建
 

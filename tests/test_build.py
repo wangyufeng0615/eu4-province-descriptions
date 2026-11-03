@@ -119,8 +119,13 @@ class TestBuild(Fixture):
         mods = self.tmp / 'mod'
         build.install(cfg, out / cfg['mod_dir'], mods)
         build.install(cfg, out / cfg['mod_dir'], mods)
-        self.assertIn('path="mod/', (mods / f'{cfg["mod_dir"]}.mod').read_text(encoding='utf-8'))
-        (mods / cfg['mod_dir'] / 'descriptor.mod').write_text('name="Someone else"\n', encoding='utf-8')
+        dev = f'{cfg["mod_dir"]}_dev'
+        reg = (mods / f'{dev}.mod').read_text(encoding='utf-8')
+        self.assertIn(f'path="mod/{dev}"', reg)
+        self.assertIn(f'name="{cfg["name"]} (dev)"', reg)    # 和订阅版同名时游戏不加载订阅版
+        self.assertNotIn('remote_file_id', reg)
+        self.assertFalse((mods / cfg['mod_dir']).exists())
+        (mods / dev / 'descriptor.mod').write_text('name="Someone else"\n', encoding='utf-8')
         with self.assertRaises(ValueError):
             build.install(cfg, out / cfg['mod_dir'], mods)
 

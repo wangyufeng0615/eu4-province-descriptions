@@ -6,7 +6,7 @@ python -B tools/release.py --dry-run                       # 只检查和构建�
 
 步骤：版本号必须是比 project.json 新的 x.y.z → 改 project.json、CHANGELOG.md 加一节 → 单元测试 → build.py --check
 → 构建到 dist/release-x.y.z/（目录必须是新的）→ build.py --verify。任何一步失败都把 project.json 和 CHANGELOG.md 改回去。
---install 把构建结果装进本机游戏的模组目录（逐文件核对哈希）；--commit 提交 project.json、CHANGELOG.md 和 data/。
+--install 把构建结果以开发副本「<模组名> (dev)」装进本机游戏的模组目录（逐文件核对哈希）；--commit 提交 project.json、CHANGELOG.md 和 data/。
 上传是单独的一步，见 AGENTS.md「发布」。本文件在两个发布工程里相同，差别都在 project.json 和 tools/build.py。
 """
 from __future__ import annotations
