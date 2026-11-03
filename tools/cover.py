@@ -1,11 +1,15 @@
 """工坊封面：从游戏地图取参考图，交给 Codex 生图模型画成封面，再导出工坊和模组要的尺寸。
 
-python tools/cover.py reference --game-root "<EU4 安装目录>"   # Windows：画 workshop/assets/map-reference.png（真实省份轮廓，四色）
+python tools/cover.py world --game-root "<EU4 安装目录>"       # Windows：画全世界四色省份图，拼成 cover-master.en.png / .zh-CN.png（现行封面）
+python tools/cover.py reference --game-root "<EU4 安装目录>"   # 旧：画不列颠群岛四色参考图（0.15.0 前的封面）
 python tools/cover.py derive                                   # 从 cover-master.en.png / cover-master.zh-CN.png 导出
                                                                # cover.jpg、cover.zh-CN.jpg（1254，JPEG 90）和 thumbnail.png（512）
 
-要 Pillow（uv run --with pillow python tools/cover.py derive）。母版由 Codex 生图模型按参考图画成，提示词在 workshop/assets/cover-prompt.*.txt。
-参考图只取轮廓和邻接关系，不含游戏美术；封面是宣传图，不是游戏截图。
+要 Pillow；world 还要 numpy。
+现行封面（2026-11-04 起）：world 从游戏地图取有词条的 3,272 个陆地省份四色上色（没词条的陆地灰色，海和湖白色），
+地图铺满宽度、纵向拉伸到正好填满标题下方，再拼上 title.<语言>.png 和左下角太平洋里的 languages.png。
+标题和语言标签是从旧的生图母版（Codex 生图模型按不列颠参考图画成，提示词在 cover-prompt.*.txt）裁下来的固定素材。
+地图只取轮廓和邻接关系，不含游戏美术；封面是宣传图，不是游戏截图。
 """
 import argparse
 import hashlib
@@ -117,6 +121,80 @@ def reference(game):
     print(f'{len(adj)} 个省份，参考图 {out.size} → {ASSETS / "map-reference.png"}')
 
 
+
+WORLD_SIDE, WORLD_PAD, WORLD_GAP = 1254, 16, 14
+GRAY = (222, 222, 222)
+
+
+def world(game):
+    import numpy as np
+    keep = {json.loads(l)['id'] for l in (ROOT / 'data' / 'entries.jsonl').read_text(encoding='utf-8').splitlines() if l.strip()}
+    dm = re.sub(r'#.*', '', (game / 'map' / 'default.map').read_text(encoding='latin-1'))
+    water = set()
+    for k in ('sea_starts', 'lakes'):
+        water |= {int(x) for x in re.findall(r'\d+', re.search(k + r'\s*=\s*\{([^}]*)\}', dm).group(1))}
+    c2id = {}
+    for line in (game / 'map' / 'definition.csv').read_text(encoding='latin-1').splitlines()[1:]:
+        f = line.split(';')
+        if len(f) >= 4 and f[0].isdigit():
+            c2id[(int(f[1]) << 16) | (int(f[2]) << 8) | int(f[3])] = int(f[0])
+    img = np.asarray(Image.open(game / 'map' / 'provinces.bmp').convert('RGB')).astype(np.int64)
+    H, W, _ = img.shape
+    u, inv = np.unique((img[..., 0] << 16) | (img[..., 1] << 8) | img[..., 2], return_inverse=True)
+    ids = np.array([c2id.get(int(k), 0) for k in u])[inv].reshape(H, W)
+    # 有词条的省份 → id；没词条的陆地 → -1（灰）；海、湖、未定义 → 0（白）
+    grid = np.where(np.isin(ids, list(keep)), ids, np.where(np.isin(ids, list(water)) | (ids == 0), 0, -1))
+    # 上下裁到有词条像素较多的行（去掉极地零星小岛，留几行边）
+    rows = np.where((grid > 0).sum(1) > 200)[0]
+    y0, y1 = max(rows.min() - 6, 0), min(rows.max() + 6, H)
+    grid = grid[y0:y1]
+    h = grid.shape[0]
+    adj = {}
+    for a, b in ((grid[:, :-1], grid[:, 1:]), (grid[:-1], grid[1:])):
+        m = (a != b) & (a > 0) & (b > 0)
+        for x, y in set(zip(a[m].tolist(), b[m].tolist())):
+            adj.setdefault(x, set()).add(y)
+            adj.setdefault(y, set()).add(x)
+    col = {}
+    for i in sorted(sorted(set(np.unique(grid[grid > 0]).tolist())), key=lambda i: -len(adj.get(i, ()))):
+        used = {col[j] for j in adj.get(i, ()) if j in col}
+        col[i] = next((c for c in range(4) if c not in used), i % 4)
+    lut = np.zeros(max(col) + 1, np.int64)
+    for k, v in col.items():
+        lut[k] = v
+    pal = np.array(PALETTE, np.uint8)
+
+    def render(width, height):
+        g = grid[(np.arange(height) * h / height).astype(int).clip(0, h - 1)][:, (np.arange(width) * W / width).astype(int).clip(0, W - 1)]
+        out = np.full((height, width, 3), 255, np.uint8)
+        out[g == -1] = GRAY
+        out[g > 0] = pal[lut[g[g > 0]]]
+        e = np.zeros(g.shape, bool)
+        e[:, :-1] |= (g[:, :-1] != g[:, 1:]) & ((g[:, :-1] > 0) | (g[:, 1:] > 0))
+        e[:-1] |= (g[:-1] != g[1:]) & ((g[:-1] > 0) | (g[1:] > 0))
+        out[e] = INK
+        return Image.fromarray(out)
+
+    render(WORLD_SIDE, round(h * WORLD_SIDE / W)).save(ASSETS / 'map-reference.png', optimize=True)
+    labels = Image.open(ASSETS / 'languages.png').convert('RGB')
+    labels = labels.resize((round(labels.width * .9), round(labels.height * .9)), Image.LANCZOS)
+    stretch = {}
+    for lang in ('en', 'zh-CN'):
+        title = Image.open(ASSETS / f'title.{lang}.png').convert('RGB')
+        my = WORLD_PAD + title.height + WORLD_GAP
+        mh = WORLD_SIDE - my - WORLD_PAD
+        out = Image.new('RGB', (WORLD_SIDE, WORLD_SIDE), 'white')
+        out.paste(title, (0, WORLD_PAD))
+        out.paste(render(WORLD_SIDE, mh), (0, my))
+        out.paste(labels, (18, my + mh - labels.height - 6))   # 左下角太平洋
+        out.save(ASSETS / f'cover-master.{lang}.png', optimize=True)
+        stretch[lang] = round(mh / (h * WORLD_SIDE / W), 2)
+    src = {'map': 'world', 'provinces': len(col), 'rows': [int(y0), int(y1)], 'vertical_stretch': stretch,
+           'source': 'EU4 map/provinces.bmp, definition.csv, default.map; data/entries.jsonl'}
+    (ASSETS / 'map-source.json').write_text(json.dumps(src, indent=1) + '\n', encoding='utf-8')
+    print(f'{len(col)} 个省份，纵向拉伸 {stretch} → cover-master.en.png / cover-master.zh-CN.png')
+
+
 def derive():
     files = {}
     for lang, jpg in (('en', 'cover.jpg'), ('zh-CN', 'cover.zh-CN.jpg')):
@@ -139,11 +217,11 @@ def derive():
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest='cmd', required=True)
-    r = sub.add_parser('reference')
-    r.add_argument('--game-root', type=Path, required=True)
+    for name in ('world', 'reference'):
+        sub.add_parser(name).add_argument('--game-root', type=Path, required=True)
     sub.add_parser('derive')
     a = ap.parse_args()
-    reference(a.game_root) if a.cmd == 'reference' else derive()
+    {'world': lambda: world(a.game_root), 'reference': lambda: reference(a.game_root), 'derive': derive}[a.cmd]()
 
 
 if __name__ == '__main__':

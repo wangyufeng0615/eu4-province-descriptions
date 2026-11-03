@@ -64,9 +64,9 @@ python -B tools\build.py --verify dist\<新目录>
 | `tools/release.py` | 准备一个版本（升版本、CHANGELOG、全部检查、构建），两个发布工程相同 |
 | `tools/steam_upload.py`、`tools/steam_page.py` | 更新已有工坊条目的内容和页面 |
 | `tools/eu4zh.py` | 中文模组（工坊 2976470733）的文字编码，和研究工程里的同名文件一致，改一处要同步另一处 |
-| `tools/cover.py` | 封面：`reference` 从游戏地图画不列颠群岛的四色参考图，`derive` 从生图母版导出封面和缩略图 |
+| `tools/cover.py` | 封面：`world` 从游戏地图画全世界四色省份图（纵向拉伸填满标题下方），拼成中英文母版；`derive` 导出封面和缩略图；`reference` 是 0.15.0 前不列颠群岛封面的参考图 |
 | `workshop/` | 工坊页面中英文案（`description.*.txt`，BBCode）、更新说明、模组里附带的玩家说明 `player-readme.*.md`、`page.json` |
-| `workshop/assets/` | 封面母版 `cover-master.*.png`（Codex 生图模型按 `map-reference.png` 和 EU5 地块封面画成，提示词在 `cover-prompt.*.txt`）、导出的 `cover.jpg`、`cover.zh-CN.jpg`、`thumbnail.png` |
+| `workshop/assets/` | 封面母版 `cover-master.*.png`（2026-11-04 起由 `cover.py world` 生成：世界地图 ＋ 固定素材 `title.*.png`、`languages.png`；这些素材裁自旧的生图母版，Codex 生图模型按不列颠参考图和 EU5 地块封面画成，提示词在 `cover-prompt.*.txt`）、导出的 `cover.jpg`、`cover.zh-CN.jpg`、`thumbnail.png` |
 | `LICENSE`、`LICENSES/`、`CREDITS.md` | 工具 MIT、正文 CC BY-SA 4.0（照 EU5 地块模组的选择），署名和第三方说明；都会打进模组 |
 | `CHANGELOG.md` | 版本记录，由 `release.py` 写 |
 
