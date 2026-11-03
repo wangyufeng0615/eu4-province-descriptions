@@ -14,7 +14,8 @@ python -B tools\\build.py --install --debug   # 提示框底部多一行中文�
 project.json 的 compat 可选，用来另外生成"某界面模组底稿＋按钮"的兼容补丁，目前不用。
 
 EU4 英文界面只能显示 Windows-1252 字符：英文正文里的 ō、ł、ı、ʻ 等在生成时换成最接近的可显示字母，
-希腊文、汉字等直接去掉（fold_latin1）；中文正文里夹的这类拉丁字母同样处理。
+希腊文、汉字等直接去掉（fold_latin1）。中文正文按中文模组字体实际收录的字符处理（fold_latin_in_zh）：
+字体里只有 ASCII、拼音声调字母和几个符号，其他西文字母去掉附加符号，西里尔文、高棉文等去掉。
 
 中英文都写进 l_english：中文按中文模组的编码存（tools/eu4zh.py），游戏里用 is_mod_active 检测中文模组，
 启用时显示中文，否则显示英文。l_french / l_german / l_spanish 暂时放英文正文。
@@ -78,11 +79,31 @@ def fold_latin1(s):
     return re.sub(r' ([,.;:])', r'\1', out)
 
 
+# 中文模组（工坊 2976470733）字体收录的西文字符：ASCII 全有；另外只有拼音声调字母和几个符号
+# （2026-11-03 查 gfx/fonts/zh-hans-*.fnt，各字号一致）。ñ、ö、ç、ß、大写带符号字母都没有。
+ZH_FONT_EXTRA = set('àáèéêìíòóùúüāō¢£¤¥§¨°±·×÷')
+
+
+def _zh_ok(ch):
+    o = ord(ch)
+    return o < 0x80 or ch in ZH_FONT_EXTRA or 0x2000 <= o <= 0x206F or o >= 0x2E80
+
+
 def fold_latin_in_zh(s):
-    """中文正文：只处理夹在里面的拉丁扩展字母和修饰符号，汉字和中文标点原样交给 eu4zh 编码。"""
-    def f(m):
-        return ''.join(_fold_char(c, latin1_only=True) for c in m.group(0))
-    return re.sub(r'[\u0100-\u02ff\u0300-\u036f\u1e00-\u1eff\u0370-\u03ff]+', f, unicodedata.normalize('NFC', s))
+    """中文正文：字体里没有的西文字母换成不带符号的形式（ö→o、ł→l），西里尔文、高棉文、希腊文等整段去掉。"""
+    out = []
+    for ch in unicodedata.normalize('NFC', s):
+        if _zh_ok(ch):
+            out.append(ch)
+            continue
+        if ch in LATIN_FALLBACK:
+            out.append(LATIN_FALLBACK[ch])
+            continue
+        base = ''.join(c for c in unicodedata.normalize('NFKD', ch) if not unicodedata.combining(c))
+        out.append(base if base and all(_zh_ok(c) for c in base) else '')
+    r = ''.join(out)
+    r = re.sub(r'[（(]\s*[，,、；;]?\s*[）)]', '', r)   # 去掉只剩空壳的括号
+    return re.sub(r'[ \t]{2,}', ' ', r)
 
 
 def q(s):
