@@ -23,6 +23,11 @@ Every description is written from published sources, mainly Wikipedia in English
 [*]Descriptions cover 1444–1821 and do not change with the start date.
 [/list]
 
+[h2]My other mods[/h2]
+[list]
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3830305546][b]Descriptions for Every Tile[/b][/url] (Europa Universalis V): descriptions for all 28,316 tiles on the EU5 map. Achievement compatible.
+[/list]
+
 [h2]Update history[/h2]
 [list]
 [*]1.0.1: First public release.
