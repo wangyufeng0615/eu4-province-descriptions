@@ -52,6 +52,7 @@ python -B tools\build.py --verify dist\<新目录>
 4. **之后的更新**：先 `release.py <新版本>`，再在登录了 Steam 的桌面会话里 `python -B tools\steam_upload.py <版本> --upload --notes-file workshop\changenotes.en.txt --output dist\upload-<版本>.json`；页面文案和封面用 `tools\steam_page.py`。这两个工具改自 EU5 地块发布工程，只更新已有条目，不建条目、不改可见性、不接受条款。远程触发的办法（计划任务借用桌面会话）见 EU5 地块发布工程 `docs/PUBLISHING.md`。
 5. **更新说明（agent 全程自动处理，作者不操作，2026-11-04 作者要求）**：`workshop/changenotes.*.txt` 第一行写版本号，同步改 `description.*.txt` 末尾的更新记录并用 `steam_page.py --descriptions` 提交。英文说明随 `steam_upload.py --notes-file` 提交；中文说明接口补不了，用 Claude in Chrome（作者的 Chrome 已登录 Steam）打开 `https://steamcommunity.com/sharedfiles/filedetails/changelog/3833082096`，点最新一条的「编辑」，语言选「简体中文」（地址带 `?language=6`）填 `changenotes.zh-CN.txt` 并保存，再用 `?l=schinese` 和 `?l=english` 分别核对。网页上没有删除，只能编辑；1.0.0 和 1.0.1 已合并为一条"1.0.1 首次公开发布"，另两条空记录（启动器上传、早期页面更新）留着。
 6. **画廊**：`page.json` 的 `gallery` 列出要放进画廊的图（每张小于 1 MB），`steam_page.py --assets` 按文件名更新或新增。现有：中文封面、英文效果图 `gallery-en.jpg`（君士坦丁堡）、中文效果图 `gallery-zh-CN.jpg`（北京）。
+7. **徽章**：描述标题下的 `[img]` 是 `workshop/assets/badges/` 的两张徽章（`render.py` 照搬 EU5 地块，英文"coverage 100% / Bigger UI compatible"，中文"覆盖率 100% / 支持语言 英文 + 简中"），用 `steam_page.py --host-badges` 存进 Steam 云并共享，直链记在 `page.json` 的 `description_badges`；不占画廊，云文件不要删。改了徽章要重新渲染、托管，再把描述里的直链换掉。
 
 **还要作者确认的事**（不影响构建，但发布前要看）：小分辨率或界面放大时按钮会不会盖住关闭按钮（见研究工程 `tasks/todo.md`「小屏布局」）；工坊页面写了"逐条审阅订正过"，要等研究工程的审查修复流程跑完再发。
 
