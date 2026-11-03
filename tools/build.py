@@ -13,6 +13,8 @@ python -B tools/build.py --check --game-root "<EU4 安装目录>"   # 另外核�
 而是把原版省份窗口定义连同按钮写进 interface/00_eu4lg_provinceview.gui。游戏遇到同名窗口用先读到的定义，
 00_ 排在 provinceview.gui 前面，所以装不装 Bigger UI 按钮都在（2026-11-03 在游戏里验证）。
 原版底稿收在 assets/vanilla/provinceview.gui，哈希记在 project.json；游戏更新后用 --game-root 核对。
+未殖民省份不用省份窗口，用 colonisationpanel.gui 里的殖民面板（风景图占满整宽，右边没有空白）。同样的办法写进
+interface/00_eu4lg_colonisationpanel.gui，按钮放在风景图里靠右、和关闭按钮上下对齐（project.json 的 colony_gui）。
 
 EU4 英文界面只能显示 Windows-1252 字符：英文正文里的 ō、ł、ı、ʻ 等在生成时换成最接近的可显示字母，
 希腊文、汉字等直接去掉（fold_latin1）。中文正文按中文模组字体实际收录的字符处理（fold_latin_in_zh）。
@@ -202,15 +204,26 @@ def base_gui_text(root, cfg):
     return b.decode('utf-8', errors='surrogateescape')
 
 
+def colony_gui_text(root, cfg):
+    c = cfg['colony_gui']
+    b = project_file(root, c['base']).read_bytes()
+    if sha256(b) != c['sha256']:
+        raise ValueError(f'{c["base"]} 的哈希和 project.json 记的不一致')
+    return b.decode('utf-8', errors='surrogateescape')
+
+
 def check_game(root, cfg, game_root):
-    """游戏更新后，原版省份窗口变了就要重新取底稿、重新量按钮位置。"""
+    """游戏更新后，原版省份窗口或殖民面板变了就要重新取底稿、重新量按钮位置。"""
     g = Path(game_root) / 'interface' / 'provinceview.gui'
     same = sha256(g.read_bytes()) == cfg['base_gui_sha256']
+    gc = Path(game_root) / 'interface' / 'colonisationpanel.gui'
+    same_colony = sha256(gc.read_bytes()) == cfg['colony_gui']['sha256']
     ver = None
     ls = Path(game_root) / 'launcher-settings.json'
     if ls.exists():
         ver = json.loads(ls.read_text(encoding='utf-8')).get('rawVersion')
-    return {'game_version': ver, 'provinceview_unchanged': same, 'checked_version': cfg.get('game_version_checked')}
+    return {'game_version': ver, 'provinceview_unchanged': same, 'colonisationpanel_unchanged': same_colony,
+            'checked_version': cfg.get('game_version_checked')}
 
 
 # ───────────────────────────── 生成文件
@@ -231,6 +244,26 @@ def add_button(g, x, y):
 			}}
 '''
     return g[:i] + button + g[i:]
+
+
+def add_colony_button(g, x, y):
+    anchor = 'name = "colonisationpanel"'
+    if g.count(anchor) != 1:
+        raise ValueError('殖民面板底稿里找不到唯一的 colonisationpanel')
+    start = g.index(anchor)
+    m = re.compile(r'guiButtonType = \{\s*name = "close_button".*?\n\t\t\}', re.S).search(g, start)
+    if not m:
+        raise ValueError('殖民面板底稿里找不到 close_button')
+    button = f'''
+
+		# Descriptions for Every Province: uncolonized provinces use this panel; button inside the terrain picture, right side
+		guiButtonType = {{
+			name = "eu4lg_button"
+			quadTextureSprite = "GFX_eu4lg_button"
+			position = {{ x = {x} y = {y} }}
+			scripted = yes
+		}}'''
+    return g[:m.end()] + button + g[m.end():]
 
 
 def descriptor(cfg, local_path=None):
@@ -295,6 +328,9 @@ def payload(root, cfg, rows, debug=False):
     files['common/custom_gui/eu4lg.txt'] = (b'custom_button = {\n\tname = eu4lg_button\n\tpotential = { always = yes }\n'
                                             b'\ttooltip = eu4lg_button_tt\n}\n')
     files[f'interface/{cfg["gui_file"]}'] = add_button(base_gui_text(root, cfg), *cfg['button_pos']).encode(
+        'utf-8', errors='surrogateescape')
+    c = cfg['colony_gui']
+    files[f'interface/{c["file"]}'] = add_colony_button(colony_gui_text(root, cfg), *c['button_pos']).encode(
         'utf-8', errors='surrogateescape')
     files['interface/eu4lg.gfx'] = (b'spriteTypes = {\n\tspriteType = {\n\t\tname = "GFX_eu4lg_button"\n'
                                     b'\t\ttexturefile = "gfx//interface//eu4lg_button.dds"\n'

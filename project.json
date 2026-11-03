@@ -29,5 +29,14 @@
   "base_gui": "assets/vanilla/provinceview.gui",
   "base_gui_sha256": "4cdd2c08139ed3daebcca777a7768f9d36e51e9bb6e58fe826579cd437c4b75f",
   "gui_file": "00_eu4lg_provinceview.gui",
+  "colony_gui": {
+    "base": "assets/vanilla/colonisationpanel.gui",
+    "sha256": "913be55ce8f1ce81a761e76f256d9a78e098ce0c9bfb94ea4efc977384aae186",
+    "file": "00_eu4lg_colonisationpanel.gui",
+    "button_pos": [
+      297,
+      -49
+    ]
+  },
   "thumbnail_file": "workshop/assets/thumbnail.png"
 }
