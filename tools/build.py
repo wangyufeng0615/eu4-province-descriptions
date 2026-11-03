@@ -7,6 +7,12 @@ python -B tools\\build.py --install --debug   # 提示框底部多一行中文�
 数据由研究工程导出（研究工程 tools/sync_workshop.sh 在 MacBook 上一步做完导出、拷贝、构建、安装）。
 模组名、版本、依赖、按钮位置、底稿 GUI 路径都在 project.json。
 
+省份窗口文件 interface/provinceview.gui 在 EU4 里是整份覆盖，谁后加载用谁的，所以生成两个模组：
+- 主模组：以原版 provinceview.gui 为底稿加按钮，单独就能用；依赖里写 Bigger UI，只为装了它时排在它后面。
+- 兼容补丁（project.json 的 compat）：只有一份以 Bigger UI 的 provinceview.gui 为底稿加按钮的文件，
+  依赖 Bigger UI 和主模组，排在最后，让 Bigger UI 给省份窗口加的快捷键保留下来。
+两份底稿的布局完全相同（2026-11-03 比对：只差 20 行快捷键、一个列表高度和一处编码），按钮坐标通用。
+
 中英文都写进 l_english：中文按中文模组的编码存（tools/eu4zh.py），游戏里用 is_mod_active 检测中文模组，
 启用时显示中文，否则显示英文。l_french / l_german / l_spanish 暂时放英文正文。
 """
@@ -51,6 +57,42 @@ def load(cfg):
     if len(ids) != len(set(ids)):
         sys.exit('data/entries.jsonl 里有重复的省份 id')
     return rows
+
+
+def add_button(base_gui, x, y):
+    g = Path(base_gui).read_text(encoding='utf-8', errors='surrogateescape')
+    anchor = 'name = "province_window"'
+    if g.count(anchor) != 1:
+        sys.exit(f'{base_gui} 里找不到唯一的 province_window')
+    i = g.index('### Core', g.index(anchor)) + len('### Core')
+    button = f'''
+
+			# EU4 gazetteer: scripted button in the empty strip right of the terrain picture
+			guiButtonType = {{
+				name = "eu4lg_button"
+				quadTextureSprite = "GFX_eu4lg_button"
+				position = {{ x = {x} y = {y} }}
+				scripted = yes
+			}}
+'''
+    return g[:i] + button + g[i:]
+
+
+def descriptor(name, version, supported, depends):
+    deps = ''.join(f'\t"{d}"\n' for d in depends)
+    return (f'name="{name}"\nversion="{version}"\ntags={{\n\t"Interface"\n}}\n'
+            f'supported_version="{supported}"\n' + (f'dependencies={{\n{deps}}}\n' if deps else ''))
+
+
+def build_compat(cfg, c, out):
+    """兼容补丁：只有一份换了底稿的省份窗口文件。"""
+    if out.exists():
+        shutil.rmtree(out)
+    (out / 'interface').mkdir(parents=True)
+    (out / 'interface' / 'provinceview.gui').write_text(add_button(c['base_gui'], *cfg['button_pos']),
+                                                        encoding='utf-8', errors='surrogateescape', newline='')
+    (out / 'descriptor.mod').write_text(descriptor(c['name'], cfg['version'], cfg['supported_version'], c['depends']),
+                                        encoding='utf-8', newline='\n')
 
 
 def build(cfg, rows, out, base_gui, debug):
@@ -104,34 +146,15 @@ def build(cfg, rows, out, base_gui, debug):
         'custom_button = {\n\tname = eu4lg_button\n\tpotential = { always = yes }\n'
         '\ttrigger = { always = yes }\n\ttooltip = eu4lg_button_tt\n}\n', encoding='utf-8', newline='\n')
 
-    g = Path(base_gui).read_text(encoding='utf-8', errors='surrogateescape')
-    anchor = 'name = "province_window"'
-    if g.count(anchor) != 1:
-        sys.exit(f'{base_gui} 里找不到唯一的 province_window')
-    i = g.index('### Core', g.index(anchor)) + len('### Core')
-    x, y = cfg['button_pos']
-    button = f'''
-
-			# EU4 gazetteer: scripted button in the empty strip right of the terrain picture
-			guiButtonType = {{
-				name = "eu4lg_button"
-				quadTextureSprite = "GFX_eu4lg_button"
-				position = {{ x = {x} y = {y} }}
-				scripted = yes
-			}}
-'''
-    (out / 'interface' / 'provinceview.gui').write_text(g[:i] + button + g[i:], encoding='utf-8',
+    (out / 'interface' / 'provinceview.gui').write_text(add_button(base_gui, *cfg['button_pos']), encoding='utf-8',
                                                         errors='surrogateescape', newline='')
     shutil.copyfile(ROOT / 'assets' / 'eu4lg_button.dds', out / 'gfx' / 'interface' / 'eu4lg_button.dds')
     (out / 'interface' / 'eu4lg.gfx').write_text(
         'spriteTypes = {\n\tspriteType = {\n\t\tname = "GFX_eu4lg_button"\n'
         '\t\ttexturefile = "gfx//interface//eu4lg_button.dds"\n'
         '\t\teffectFile = "gfx/FX/buttonstate.lua"\n\t\tclicksound = click\n\t}\n}\n', encoding='utf-8', newline='\n')
-    deps = ''.join(f'\t"{d}"\n' for d in cfg['depends'])
-    (out / 'descriptor.mod').write_text(
-        f'name="{cfg["name"]}"\nversion="{cfg["version"]}"\ntags={{\n\t"Interface"\n}}\n'
-        f'supported_version="{cfg["supported_version"]}"\n' + (f'dependencies={{\n{deps}}}\n' if deps else ''),
-        encoding='utf-8', newline='\n')
+    (out / 'descriptor.mod').write_text(descriptor(cfg['name'], cfg['version'], cfg['supported_version'], cfg['depends']),
+                                        encoding='utf-8', newline='\n')
 
 
 def digests(d):
@@ -146,8 +169,8 @@ def game_running():
     return 'eu4.exe' in r.stdout.lower()
 
 
-def install(cfg, out):
-    name = cfg['mod_dir']
+def install(cfg, out, name=None):
+    name = name or cfg['mod_dir']
     dst = MOD_ROOT / name
     if game_running():
         print('提示：EU4 正在运行，装好后要完全退出再重开才会生效')
@@ -179,6 +202,12 @@ def main():
     print(f'构建 {len(rows)} 条地方志到 {out}（版本 {cfg["version"]}{"，调试行" if a.debug else ""}）')
     if a.install:
         install(cfg, out)
+    for c in cfg.get('compat', []):
+        cout = out.parent / c['mod_dir']
+        build_compat(cfg, c, cout)
+        print(f'构建兼容补丁 {c["name"]} 到 {cout}')
+        if a.install:
+            install(cfg, cout, c['mod_dir'])
 
 
 if __name__ == '__main__':

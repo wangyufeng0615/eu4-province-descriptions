@@ -34,7 +34,7 @@ python -B tools\build.py --install
 
 | 路径 | 内容 |
 |---|---|
-| `project.json` | 模组名、目录名、版本、依赖、中文模组的显示名、按钮位置、底稿 GUI 路径 |
+| `project.json` | 模组名、目录名、版本、依赖、中文模组的显示名、按钮位置、底稿 GUI 路径，`compat` 是兼容补丁的名称、目录、底稿和依赖 |
 | `data/entries.jsonl` | 研究工程导出的词条，一行一个省份：`id`、`en`、`zh`、`status` |
 | `tools/build.py` | 构建与安装，只用标准库 |
 | `tools/eu4zh.py` | 中文模组（工坊 2976470733）的文字编码，和研究工程里的同名文件一致，改一处要同步另一处 |
@@ -42,11 +42,11 @@ python -B tools\build.py --install
 
 ## 技术要点
 
-- 按钮加在 Bigger UI（工坊 788906833）的 `provinceview.gui` 上，`project.json` 的 `base_gui` 指向它；正式发布要另做原版界面一份，并说明加载顺序。
+- **两个模组**（2026-11-03 起）：`provinceview.gui` 整份覆盖，谁后加载用谁的。`build.py` 生成主模组（`base_gui` 是原版文件，加按钮，单独可用；依赖里写 Bigger UI 只为排在它后面）和 `compat` 里的 Bigger UI 兼容补丁（只有一份 Bigger UI 底稿加按钮的 `provinceview.gui`，依赖 Bigger UI 和主模组）。原版和 Bigger UI 的这个文件只差 20 行快捷键、一个列表高度和一处编码，布局相同，按钮坐标通用。没装补丁时，Bigger UI 玩家的按钮照样有，只是省份窗口里的快捷键失效。游戏内验证项见研究工程 `tasks/todo.md`。
 - 中英文都写进 `l_english`；用 `is_mod_active` 检测中文模组，启用时显示中文。`zh_mods` 发布前要补齐常见中文模组的显示名。
 - 每个省份一条 `province_id = N` 的 `defined_text` 分支，只在悬停按钮时判断。
 - 加了 `common/custom_gui`，会改变校验码，铁人模式拿不到成就；不改校验码的路线 0.1 已证实走不通。
 
 ## 还没做
 
-工坊页面文案、截图、封面、版本号和更新日志的规矩、原版界面版本、GitHub 公开仓库。真要发布时照 EU5 地块发布工程（`V:\paradox-mods\eu5-locations\workshop`）补齐。
+工坊页面文案（写明 Bigger UI 玩家要同时订阅兼容补丁）、截图、封面、版本号和更新日志的规矩、GitHub 公开仓库。真要发布时照 EU5 地块发布工程（`V:\paradox-mods\eu5-locations\workshop`）补齐。

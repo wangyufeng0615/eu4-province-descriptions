@@ -1,10 +1,18 @@
 {
   "name": "EU4 Gazetteer Test",
   "mod_dir": "eu4_gazetteer_test",
-  "version": "0.10",
+  "version": "0.11",
   "supported_version": "v1.37.*",
   "depends": ["Bigger UI V1.37"],
   "zh_mods": ["Chinese Language Mod for 1.37"],
   "button_pos": [450, -2],
-  "base_gui": "D:/SteamLibrary/steamapps/workshop/content/236850/788906833/interface/provinceview.gui"
+  "base_gui": "D:/SteamLibrary/steamapps/common/Europa Universalis IV/interface/provinceview.gui",
+  "compat": [
+    {
+      "name": "EU4 Gazetteer Test - Bigger UI compatibility",
+      "mod_dir": "eu4_gazetteer_test_biggerui",
+      "base_gui": "D:/SteamLibrary/steamapps/workshop/content/236850/788906833/interface/provinceview.gui",
+      "depends": ["Bigger UI V1.37", "EU4 Gazetteer Test"]
+    }
+  ]
 }
