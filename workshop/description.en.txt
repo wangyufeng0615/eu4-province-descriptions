@@ -25,6 +25,5 @@ Every description is written from published sources, mainly Wikipedia in English
 
 [h2]Update history[/h2]
 [list]
-[*]1.0.1: Fixed the button not appearing in the Workshop version.
-[*]1.0.0: First public release.
+[*]1.0.1: First public release.
 [/list]

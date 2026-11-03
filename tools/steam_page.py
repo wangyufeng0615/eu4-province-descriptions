@@ -2,7 +2,7 @@
 
 python -B tools/steam_page.py --output dist/<新记录>.json                 # 只读：两种语言的标题、描述、封面、可见性
 python -B tools/steam_page.py --descriptions --output dist/<新记录>.json  # 提交两种语言的标题和描述（每种语言标题描述一起提交）
-python -B tools/steam_page.py --assets --output dist/<新记录>.json        # 更新主封面和中文附图
+python -B tools/steam_page.py --assets --output dist/<新记录>.json        # 更新主封面和画廊（page.json 的 gallery：中文封面、中英文效果图）
 
 游戏、条目编号和 steam_api64.dll 路径都读 project.json（steam_app_id、publishedfileid、steam_api_dll）；
 publishedfileid 还是 null（工坊条目还没建）时直接拒绝。不读凭据，不改可见性，不建新条目，不接受条款。
@@ -123,7 +123,7 @@ class Steam:
             if not ((path/'.metadata/metadata.json').is_file() or (path/'descriptor.mod').is_file()):
                 raise ValueError('Content must be the built mod folder')
             assert self.ug('SetItemContent', B, [U64,S], handle, str(path).encode())
-        paths = ['workshop/assets/cover.zh-CN.jpg']
+        paths = json.loads((ROOT/'workshop/page.json').read_text(encoding='utf-8')).get('gallery', ['workshop/assets/cover.zh-CN.jpg'])
         for relative in paths:
             path = ROOT/relative
             assert path.is_file() and path.stat().st_size < 1_000_000

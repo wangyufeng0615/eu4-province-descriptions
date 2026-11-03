@@ -1,2 +1,2 @@
 1.0.1
-Fix: the button did not appear in the Workshop version (the mod descriptor now carries the Workshop ID).
+First public release: descriptions for all 3,272 land provinces.
