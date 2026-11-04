@@ -1,0 +1,31 @@
+name: Release
+# Pushing a tag such as v1.3.0 builds the mod from this commit and attaches the ZIP to a GitHub release.
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.13'
+      - name: Tag must match project.json
+        run: |
+          version=$(python -c "import json; print(json.load(open('project.json'))['version'])")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then echo "Tag $GITHUB_REF_NAME does not match project.json version $version"; exit 1; fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+      - run: python -B -m unittest discover -s tests
+      - run: python -B tools/build.py --output "dist/release-$VERSION"
+      - run: python -B tools/build.py --verify "dist/release-$VERSION"
+      - name: Release notes
+        run: python -B tools/release_notes.py "$VERSION" "dist/release-$VERSION/province_descriptions-$VERSION.zip" > dist/notes.md
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "dist/release-$VERSION/province_descriptions-$VERSION.zip" \
+            --title "$VERSION" --notes-file dist/notes.md --verify-tag
