@@ -13,9 +13,10 @@ python -B tools/build.py --check --game-root "<EU4 安装目录>"   # 另外核�
 而是把原版省份窗口定义连同按钮写进 interface/00_eu4lg_provinceview.gui。游戏遇到同名窗口用先读到的定义，
 00_ 排在 provinceview.gui 前面，所以装不装 Bigger UI 按钮都在（2026-11-03 在游戏里验证）。
 原版底稿收在 assets/vanilla/provinceview.gui，哈希记在 project.json；游戏更新后用 --game-root 核对。
-奇观：省份窗口奇观面板（great_projects_window）的标题栏右端加一个卷轴按钮，悬停显示这个省份全部奇观的介绍
+奇观：奇观面板（great_projects_window）里加卷轴按钮，对准列表第一行的风景画，悬停显示这个省份全部奇观的介绍
 （data/wonders.jsonl，研究工程 content/wonders/ 导出），一个省份有两座奇观时（巴黎、君士坦丁堡……）各带标题列出。
-不放进奇观列表的每一行：行模板 great_project_entry 不在 province_window / buildings_window 之下，游戏不给它绑定
+两个按钮按条件二选一：省份归玩家（有升级按钮）时放在升级按钮左边，否则放在风景画右上角。
+不放进列表每一行：行模板 great_project_entry 不在 province_window / buildings_window 之下，游戏不给它绑定
 脚本按钮，按钮能画出来但没有提示框（2026-11-04 在游戏里验证；支持范围见游戏 common/custom_gui/example.txt）。
 未殖民省份不用省份窗口，用 colonisationpanel.gui 里的殖民面板（风景图占满整宽，右边没有空白）。同样的办法写进
 interface/00_eu4lg_colonisationpanel.gui，按钮放在风景图里靠右、和关闭按钮上下对齐（project.json 的 colony_gui）。
@@ -288,21 +289,22 @@ def add_button(g, x, y):
     return g[:i] + button + g[i:]
 
 
-def add_wonder_button(g, x, y):
+def add_wonder_button(g, owned, other):
+    """owned / other：省份归玩家（有升级按钮）和不归玩家时的位置，都是相对奇观面板的坐标。"""
     anchor = 'name = "great_projects_window"'
     if g.count(anchor) != 1:
         raise ValueError('原版底稿里找不到唯一的 great_projects_window')
     start = g.index(anchor)
     i = g.index('smoothListboxType', start, g.index('name = "great_projects_list"', start))  # 标题之后、列表之前
-    button = f'''# Descriptions for Every Province: wonder descriptions, right end of the header
+    button = ''.join(f'''# Descriptions for Every Province: wonder descriptions over the first row's picture
 				guiButtonType = {{
-					name = "eu4lg_wonder_button"
+					name = "{name}"
 					quadTextureSprite = "GFX_eu4lg_button"
 					position = {{ x = {x} y = {y} }}
 					scripted = yes
 				}}
 
-				'''
+				''' for name, (x, y) in (('eu4lg_wonder_button_owned', owned), ('eu4lg_wonder_button', other)))
     return g[:i] + button + g[i:]
 
 
@@ -408,9 +410,11 @@ def payload(root, cfg, rows, debug=False):
               b'\ttooltip = eu4lg_button_tt\n}\n')
     gui = add_button(base_gui_text(root, cfg), *cfg['button_pos'])
     if wonders:
-        custom += (b'custom_button = {\n\tname = eu4lg_wonder_button\n\tpotential = { always = yes }\n'
-                   b'\ttooltip = eu4lg_wonder_tt\n}\n')
-        gui = add_wonder_button(gui, *cfg.get('wonder_button_pos', (270, 17)))
+        for name, pot in (('eu4lg_wonder_button_owned', 'owned_by = FROM'), ('eu4lg_wonder_button', 'NOT = { owned_by = FROM }')):
+            custom += (f'custom_button = {{\n\tname = {name}\n\tpotential = {{ {pot} }}\n'
+                       '\ttooltip = eu4lg_wonder_tt\n}\n').encode()
+        gui = add_wonder_button(gui, tuple(cfg.get('wonder_button_owned_pos', (188, 62))),
+                                tuple(cfg.get('wonder_button_pos', (259, 62))))
     files['common/custom_gui/eu4lg.txt'] = custom
     files[f'interface/{cfg["gui_file"]}'] = gui.encode('utf-8', errors='surrogateescape')
     c = cfg['colony_gui']
