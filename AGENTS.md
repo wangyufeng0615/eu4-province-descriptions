@@ -86,4 +86,10 @@ python -B tools\build.py --verify dist\<新目录>
 - **按钮不写 trigger**：`custom_button` 里写 `trigger = { always = yes }`，提示框底部会多出一行"✓ 总是"。
 - 中英文都写进 `l_english`；用 `is_mod_active` 检测中文模组，启用时显示中文（2026-11-03 在游戏里证实可用：检测行显示 YES，故意写错名字的对照为 NO）。`zh_mods` 只写了实测过编码一致的 Chinese Language Mod for 1.37；中文模组随游戏版本改名（for 1.38）时要跟着加。
 - 每个省份一条 `province_id = N` 的 `defined_text` 分支，只在悬停按钮时判断。
-- **成就**：游戏校验和只算 `checksum_manifest.txt` 列出的目录里的 `.txt`、`.lua`（localisation、customizable_localization、interface、gfx 都不算），本模组在范围内的只有 `common/custom_gui/eu4lg.txt`，所以装了本模组铁人模式拿不到成就。2026-11-04 试过改成大写 `eu4lg.TXT` 躲开校验和：游戏不读这个文件，`error.log` 报 `Scripted button eu4lg_button hasn't been defined in common/custom_gui!`，按钮照样画出来却没有提示框（找不到定义的脚本按钮不会被隐藏），当天改回小写。之前探针里"提示框正常"的判断有误，可能是订阅版同时启用。
+- **成就**：装了本模组铁人模式拿不到成就，2026-11-04 查到底，没有绕开的办法，不要再试下面这些：
+  - 校验和只算 `checksum_manifest.txt` 列出的目录里的 `.txt`、`.lua`（localisation、customizable_localization、interface、gfx 都不算）。本模组在范围内的只有 `common/custom_gui/eu4lg.txt`，而提示框要知道"当前是哪个省份"，只能靠这个脚本按钮定义。
+  - 换扩展名：探针把同一份定义写成 `.yml`、无扩展名、`.Txt`、`.TXT`、`.lua`、`.gui`、`.txt.bak`、`.txt`，`error.log` 显示只有小写 `.txt` 被读到，其余都报 `Scripted button ... hasn't been defined in common/custom_gui!`。读取范围和校验范围一致。找不到定义的脚本按钮照样画出来，只是没有提示框，所以不能用"按钮显不显示"判断定义有没有被读到。
+  - 不用脚本按钮、在 gui 里直接写 `tooltip` / `tooltipText` / `delayedTooltipText` 加带 `[Root.…]` 的文本：开局即崩溃（EXCEPTION_ACCESS_VIOLATION）。原版 gui 里写死的提示框没有一处用 `[Root.…]`，游戏程序拼的提示框里带 `[Root.…]` 的只有国家、君主相关的文本，没有省份作用域。
+  - 借原版脚本按钮：原版只定义了任务界面那一组，显示条件是国家层面的，放进省份窗口会被隐藏。
+  - 游戏程序按省份编号查的文本键只有省名 `PROV<id>` 和形容词 `PROV_ADJ<id>`，没有介绍类的键。
+  - 唯一能让玩家拿成就的是社区的校验和补丁（改 eu4.exe），那是玩家自己的选择，不属于模组本身。
