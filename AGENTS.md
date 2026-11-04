@@ -62,6 +62,7 @@ python -B tools\build.py --verify dist\<新目录>
 |---|---|
 | `project.json` | 模组名（中英）、目录名、版本、游戏和工坊编号、`steam_api64.dll` 路径、标签、许可、中文模组显示名、按钮位置、原版底稿和它的哈希 |
 | `data/entries.jsonl` | 研究工程导出的词条，一行一个省份：`id`、`status`、`en`、`zh`、`sources` |
+| `data/wonders.jsonl` | 研究工程导出的奇观介绍，一行一座：`key`、`province`、`name_en`、`name_zh`、`status`、`en`、`zh`、`sources` |
 | `assets/vanilla/provinceview.gui` | 原版省份窗口（游戏 v1.37.5.0），构建时在它上面加按钮；游戏更新后用 `--check --game-root` 核对 |
 | `assets/eu4lg_button.dds` | 省份窗口里的卷轴按钮，`tools/draw_icon.py` 生成（`uv run --with pillow tools/draw_icon.py <游戏目录>/gfx/interface/button_history.dds assets/eu4lg_button`） |
 | `tools/build.py` | 检查、构建、核对、装进游戏，只用标准库 |
@@ -78,6 +79,7 @@ python -B tools\build.py --verify dist\<新目录>
 
 - **不和界面模组抢文件**（2026-11-03 起）：`provinceview.gui` 整份覆盖、谁后加载用谁的，直接改它会和 Bigger UI（工坊 788906833）这类界面模组互相顶掉。所以不覆盖它，而是把原版省份窗口定义加上按钮写进 `interface/00_eu4lg_provinceview.gui`（`project.json` 的 `gui_file`）。游戏遇到同名窗口用先读到的定义，`00_` 排在前面；2026-11-03 探测版（`00_`、`zz_` 两份，按钮位置不同）在游戏里证实生效的是 `00_`。不写依赖，也不需要兼容补丁。代价：装了 Bigger UI 时它给省份窗口加的 20 个快捷键不生效（两边布局相同，只差这些快捷键、一个列表高度和一处编码）。兼容补丁的生成代码 2026-11-03 删掉了（用不上），要时从 Git 历史 `b1786e3` 找回。
 - **字符**：EU4 英文只能显示 Windows-1252。游戏日志对 ō、ı、ā、ł 等报 "Couldn't find Latin1 character"（0.11 时 321 条英文正文、2,702 处），对 š、ž、弯引号、长破折号不报。`build.py` 的 `fold_latin1` 在生成时换成最接近的字母（ō→o、ł→l、ʻ→'），希腊文、汉字去掉；中文正文里夹的西文字母只能留 Latin-1（中文模组把码位大于 255 的都当汉字编码），由 `fold_latin_in_zh` 处理（2026-11-03 起中文里的扩展区生僻字也去掉，规则和研究工程 `entries.py` 的检查一致）。会让句子断开的情况由研究工程的检查报错、回那边改正文。
+- **奇观**（2026-11-04 加，待进游戏确认）：研究工程导出 `data/wonders.jsonl`（139 座），`build.py` 在省份窗口奇观列表每一行（`great_project_entry`）的等级按钮右边加卷轴按钮 `eu4lg_wonder_button`（`project.json` 可用 `wonder_button_pos` 改位置，默认 258, 7），悬停显示介绍。脚本没有奇观作用域，按 `province_id` 分支，一省两座奇观时两座都列出、各带标题。没有 `data/wonders.jsonl` 时不加这个按钮。`--debug` 版提示框底部显示 `scope: [Root.GetName]`，用来确认作用域是省份。
 - **按钮不写 trigger**：`custom_button` 里写 `trigger = { always = yes }`，提示框底部会多出一行"✓ 总是"。
 - 中英文都写进 `l_english`；用 `is_mod_active` 检测中文模组，启用时显示中文（2026-11-03 在游戏里证实可用：检测行显示 YES，故意写错名字的对照为 NO）。`zh_mods` 只写了实测过编码一致的 Chinese Language Mod for 1.37；中文模组随游戏版本改名（for 1.38）时要跟着加。
 - 每个省份一条 `province_id = N` 的 `defined_text` 分支，只在悬停按钮时判断。

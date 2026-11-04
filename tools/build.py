@@ -13,6 +13,9 @@ python -B tools/build.py --check --game-root "<EU4 安装目录>"   # 另外核�
 而是把原版省份窗口定义连同按钮写进 interface/00_eu4lg_provinceview.gui。游戏遇到同名窗口用先读到的定义，
 00_ 排在 provinceview.gui 前面，所以装不装 Bigger UI 按钮都在（2026-11-03 在游戏里验证）。
 原版底稿收在 assets/vanilla/provinceview.gui，哈希记在 project.json；游戏更新后用 --game-root 核对。
+奇观：省份窗口的奇观列表每一行（great_project_entry，同在 provinceview.gui 里）右上角、等级按钮右边再加一个卷轴按钮，
+悬停显示奇观介绍（data/wonders.jsonl，研究工程 content/wonders/ 导出）。脚本没有奇观作用域，按省份编号分支；
+一个省份有两座奇观时（巴黎、君士坦丁堡……）提示框里两座都列出，各带标题。
 未殖民省份不用省份窗口，用 colonisationpanel.gui 里的殖民面板（风景图占满整宽，右边没有空白）。同样的办法写进
 interface/00_eu4lg_colonisationpanel.gui，按钮放在风景图里靠右、和关闭按钮上下对齐（project.json 的 colony_gui）。
 
@@ -197,6 +200,44 @@ def load_rows(root):
     return sorted(rows, key=lambda r: r['id'])
 
 
+def load_wonders(root):
+    """data/wonders.jsonl：一行一座奇观。没有这个文件就不加奇观按钮。返回 {省份: [行, ...]}。"""
+    p = root / 'data' / 'wonders.jsonl'
+    if not p.exists():
+        return {}
+    out, seen = {}, set()
+    with open(p, encoding='utf-8') as fh:
+        for n, line in enumerate(fh, 1):
+            r = json.loads(line)
+            k, pid = r.get('key'), r.get('province')
+            if not isinstance(k, str) or not re.fullmatch(r'[a-z0-9_]+', k) or k in seen:
+                raise ValueError(f'wonders.jsonl 第 {n} 行：key 不合规或重复：{k!r}')
+            if type(pid) is not int or pid <= 0:
+                raise ValueError(f'奇观 {k} 的省份编号不对：{pid!r}')
+            seen.add(k)
+            if r.get('status') not in ('revised', 'final'):
+                raise ValueError(f'奇观 {k} 的 status 不能发布：{r.get("status")}')
+            for f in ('en', 'zh', 'name_en', 'name_zh'):
+                t = r.get(f)
+                if not isinstance(t, str) or not t.strip() or any(ord(c) < 32 and c not in '\n\r\t' for c in t):
+                    raise ValueError(f'奇观 {k} 的 {f} 为空或有控制字符')
+            src = r.get('sources')
+            if not isinstance(src, list) or not src:
+                raise ValueError(f'奇观 {k} 没有资料来源')
+            out.setdefault(pid, []).append(r)
+    return {pid: sorted(v, key=lambda r: r['key']) for pid, v in sorted(out.items())}
+
+
+def wonder_text(ws, zh):
+    """一个省份的奇观提示文字：每座一个标题加正文。"""
+    enc = (lambda s: eu4zh.encode(fold_latin_in_zh(s))) if zh else fold_latin1
+    parts = []
+    for r in ws:
+        name = q(enc(r['name_zh' if zh else 'name_en']))
+        parts.append(f'§Y{name}§!\\n\\n' + loc_text(r['zh' if zh else 'en'], zh))
+    return '\\n\\n'.join(parts)
+
+
 def base_gui_text(root, cfg):
     b = project_file(root, cfg['base_gui']).read_bytes()
     if sha256(b) != cfg['base_gui_sha256']:
@@ -244,6 +285,26 @@ def add_button(g, x, y):
 			}}
 '''
     return g[:i] + button + g[i:]
+
+
+def add_wonder_button(g, x, y):
+    anchor = 'name = "great_project_entry"'
+    if g.count(anchor) != 1:
+        raise ValueError('原版底稿里找不到唯一的 great_project_entry')
+    start = g.index(anchor)
+    i = g.rindex('instantTextBoxType', start, g.index('name = "name_label"', start))  # 图片之后、名字之前
+    button = f'''
+
+		# Descriptions for Every Province: wonder description, right of the tier button
+		guiButtonType = {{
+			name = "eu4lg_wonder_button"
+			quadTextureSprite = "GFX_eu4lg_button"
+			position = {{ x = {x} y = {y} }}
+			scripted = yes
+		}}
+
+		'''
+    return g[:i] + button.lstrip('\n') + g[i:]
 
 
 def add_colony_button(g, x, y):
@@ -302,6 +363,19 @@ def payload(root, cfg, rows, debug=False):
     for r in rows:
         loc.append(f' eu4lg_text_{r["id"]}_zh:0 "{loc_text(r["zh"], True)}"')
         loc.append(f' eu4lg_text_{r["id"]}_en:0 "{loc_text(r["en"], False)}"')
+    wonders = load_wonders(root)
+    if wonders:
+        wtt = '[Root.GetEU4LGWonderText]'
+        if debug:
+            wtt += '\\n\\n§G[debug] scope: [Root.GetName]§!'
+        loc += [f' eu4lg_wonder_tt:0 "{wtt}"',
+                ' eu4lg_wonder_route_zh:0 "[Root.GetEU4LGWonderTextZH]"',
+                ' eu4lg_wonder_route_en:0 "[Root.GetEU4LGWonderTextEN]"',
+                f' eu4lg_wonder_none_zh:0 "{q(zh("这座奇观还没有介绍。"))}"',
+                ' eu4lg_wonder_none_en:0 "No description for this monument yet."']
+        for pid, ws in wonders.items():
+            loc.append(f' eu4lg_wonder_{pid}_zh:0 "{wonder_text(ws, True)}"')
+            loc.append(f' eu4lg_wonder_{pid}_en:0 "{wonder_text(ws, False)}"')
     for lang in LANGS:
         files[f'localisation/eu4lg_l_{lang}.yml'] = (f'l_{lang}:\n' + '\n'.join(loc) + '\n').encode('utf-8-sig')
 
@@ -319,16 +393,27 @@ def payload(root, cfg, rows, debug=False):
         cl += dt('GetEU4LGText' + lang.upper(),
                  [(f'eu4lg_text_{r["id"]}_{lang}', f'province_id = {r["id"]}') for r in rows]
                  + [('eu4lg_text_none_' + lang, 'always = yes')])
+    if wonders:
+        cl += dt('GetEU4LGWonderText', [('eu4lg_wonder_route_zh', zh_trigger), ('eu4lg_wonder_route_en', 'always = yes')])
+        for lang in ('zh', 'en'):
+            cl += dt('GetEU4LGWonderText' + lang.upper(),
+                     [(f'eu4lg_wonder_{pid}_{lang}', f'province_id = {pid}') for pid in wonders]
+                     + [('eu4lg_wonder_none_' + lang, 'always = yes')])
     cl += dt('GetEU4LGDebug', [('eu4lg_debug_line', 'always = yes')])
     cl += dt('GetEU4LGDebugReal', [('eu4lg_debug_yes', zh_trigger), ('eu4lg_debug_no', 'always = yes')])
     cl += dt('GetEU4LGDebugFake', [('eu4lg_debug_fake_yes', 'is_mod_active = "No Such Mod 4f2a"'),
                                    ('eu4lg_debug_fake_no', 'always = yes')])
     files['customizable_localization/eu4lg.txt'] = ('\n'.join(cl) + '\n').encode('utf-8')
     # 不写 trigger：写了 always = yes，提示框底部会多出一行"✓ 总是"
-    files['common/custom_gui/eu4lg.txt'] = (b'custom_button = {\n\tname = eu4lg_button\n\tpotential = { always = yes }\n'
-                                            b'\ttooltip = eu4lg_button_tt\n}\n')
-    files[f'interface/{cfg["gui_file"]}'] = add_button(base_gui_text(root, cfg), *cfg['button_pos']).encode(
-        'utf-8', errors='surrogateescape')
+    custom = (b'custom_button = {\n\tname = eu4lg_button\n\tpotential = { always = yes }\n'
+              b'\ttooltip = eu4lg_button_tt\n}\n')
+    gui = add_button(base_gui_text(root, cfg), *cfg['button_pos'])
+    if wonders:
+        custom += (b'custom_button = {\n\tname = eu4lg_wonder_button\n\tpotential = { always = yes }\n'
+                   b'\ttooltip = eu4lg_wonder_tt\n}\n')
+        gui = add_wonder_button(gui, *cfg.get('wonder_button_pos', (258, 7)))
+    files['common/custom_gui/eu4lg.txt'] = custom
+    files[f'interface/{cfg["gui_file"]}'] = gui.encode('utf-8', errors='surrogateescape')
     c = cfg['colony_gui']
     files[f'interface/{c["file"]}'] = add_colony_button(colony_gui_text(root, cfg), *c['button_pos']).encode(
         'utf-8', errors='surrogateescape')
@@ -344,13 +429,17 @@ def payload(root, cfg, rows, debug=False):
         files[name] = project_file(root, src).read_bytes()
     files['sources/sources.jsonl'] = ''.join(json.dumps({'id': r['id'], 'sources': r['sources']}, ensure_ascii=False)
                                              + '\n' for r in rows).encode('utf-8')
-    check_payload(files, rows)
+    if wonders:
+        files['sources/wonder_sources.jsonl'] = ''.join(
+            json.dumps({'key': r['key'], 'province': r['province'], 'sources': r['sources']}, ensure_ascii=False) + '\n'
+            for ws in wonders.values() for r in ws).encode('utf-8')
+    check_payload(files, rows, len(wonders))
     return files
 
 
-def check_payload(files, rows):
+def check_payload(files, rows, wonder_provinces=0):
     """生成结果的硬性检查：英文全部能用 Windows-1252 显示、中文编码可逆、引号和换行没有破坏本地化格式。"""
-    en_keys = zh_keys = 0
+    en_keys = zh_keys = wen = wzh = 0
     # 只按 \n 分行：中文编码后可能含 \x1c、\x85 这类 splitlines 也会当换行的字符
     for line in files['localisation/eu4lg_l_english.yml'].decode('utf-8-sig').rstrip('\n').split('\n')[1:]:
         m = re.fullmatch(r' ([a-z0-9_]+):0 "(.*)"', line, re.S)
@@ -363,8 +452,14 @@ def check_payload(files, rows):
             en_keys += 1
         elif re.fullmatch(r'eu4lg_text_\d+_zh', key):
             zh_keys += 1
+        elif re.fullmatch(r'eu4lg_wonder_\d+_en', key):
+            wen += 1
+        elif re.fullmatch(r'eu4lg_wonder_\d+_zh', key):
+            wzh += 1
     if en_keys != len(rows) or zh_keys != len(rows):
         raise ValueError(f'本地化条数不对：英文 {en_keys}、中文 {zh_keys}、数据 {len(rows)}')
+    if wen != wonder_provinces or wzh != wonder_provinces:
+        raise ValueError(f'奇观本地化条数不对：英文 {wen}、中文 {wzh}、有奇观的省份 {wonder_provinces}')
     if files['thumbnail.png'][:8] != b'\x89PNG\r\n\x1a\n' or len(files['thumbnail.png']) >= 1_000_000:
         raise ValueError('thumbnail.png 不是 PNG 或超过 1 MB（工坊上限）')
 
@@ -433,6 +528,7 @@ def build(root, output):
     en, zh = folded_count(rows)
     receipt = {'name': cfg['name'], 'mod_dir': cfg['mod_dir'], 'version': cfg['version'],
                'publishedfileid': cfg.get('publishedfileid'), 'provinces': len(rows),
+               'wonders': sum(len(v) for v in load_wonders(root).values()),
                'folded_entries': {'en': en, 'zh': zh}, 'licenses': cfg['licenses'],
                'built_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds'),
                'files': {k: sha256(v) for k, v in sorted(files.items())},
