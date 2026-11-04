@@ -1,2 +1,2 @@
-1.2.0
-Rewrote the descriptions of the remaining provinces in the Americas, Africa and Oceania in the same style, with more on rulers, famous people, sieges, trade and local legends, and fewer bare dates. Every province now uses the new descriptions.
+1.3.0
+Added descriptions for all 139 great projects, the monuments and canals. Open a province that has one and hover the small scroll at the right end of the Great Projects header; a province with two monuments lists both. Every entry was checked sentence by sentence against Wikipedia.
