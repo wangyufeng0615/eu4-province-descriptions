@@ -1,2 +1,2 @@
 1.2.0
-Rewrote the descriptions of the remaining 1,312 provinces in the Americas, Africa and Oceania in the same style, with more on rulers, famous people, sieges, trade and local legends, and fewer bare dates. Every province now uses the new descriptions.
+Rewrote the descriptions of the remaining provinces in the Americas, Africa and Oceania in the same style, with more on rulers, famous people, sieges, trade and local legends, and fewer bare dates. Every province now uses the new descriptions.
