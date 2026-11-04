@@ -7,7 +7,7 @@
 | | 位置 | 管什么 |
 |---|---|---|
 | 研究工程 | Mac mini `~/personal/paradox-mods/eu4-provinces/research`（主副本，GitHub 私有库 `wangyufeng0615/eu4-province-gazetteer-research`）；MacBook 克隆在同一路径 | 3,272 个陆地省份的词条、资料、写作规则、批量写作调度器 |
-| 发布工程 | 本目录，Windows `V:\paradox-mods\eu4-provinces\workshop`（本地 Git，暂无远端） | 构建、装进游戏、以后的工坊文案和发布 |
+| 发布工程 | 本目录，Windows `V:\paradox-mods\eu4-provinces\workshop`（本地 Git；公开库 GitHub `wangyufeng0615/eu4-province-descriptions`，Windows 连不上 GitHub，经 MacBook 推送） | 构建、装进游戏、以后的工坊文案和发布 |
 | 旧原型 | `V:\paradox-mods\eu4-provinces\archive\eu4-gazetteer-prototype` | 0.1—0.7 原型期的脚本，已被研究工程取代，只作追溯 |
 
 ## 数据怎么流动
@@ -51,8 +51,9 @@ python -B tools\build.py --verify dist\<新目录>
 3. **第一次上传（作者做）**：工坊条目要由作者建：EU4 启动器 → 模组 → 上传模组，选本机的 `Descriptions for Every Province`（就是第 2 步装进 mod 目录的那份），可见性先选私密或仅好友，标题和描述照 `workshop/description.*.txt`，封面用 `workshop/assets/cover.jpg`。建好后把条目编号填进 `project.json` 的 `publishedfileid` 并提交；之后的构建会在 `descriptor.mod` 里写 `remote_file_id`。
 4. **之后的更新**：先 `release.py <新版本>`，再在登录了 Steam 的桌面会话里 `python -B tools\steam_upload.py <版本> --upload --notes-file workshop\changenotes.en.txt --output dist\upload-<版本>.json`；页面文案和封面用 `tools\steam_page.py`。这两个工具改自 EU5 地块发布工程，只更新已有条目，不建条目、不改可见性、不接受条款。远程触发的办法（计划任务借用桌面会话）见 EU5 地块发布工程 `docs/PUBLISHING.md`。
 5. **更新说明（agent 全程自动处理，作者不操作，2026-11-04 作者要求）**：`workshop/changenotes.*.txt` 第一行写版本号，同步改 `description.*.txt` 末尾的更新记录并用 `steam_page.py --descriptions` 提交。英文说明随 `steam_upload.py --notes-file` 提交；中文说明接口补不了，用 Claude in Chrome（作者的 Chrome 已登录 Steam）打开 `https://steamcommunity.com/sharedfiles/filedetails/changelog/3833082096`，点最新一条的「编辑」，语言选「简体中文」（地址带 `?language=6`）填 `changenotes.zh-CN.txt` 并保存，再用 `?l=schinese` 和 `?l=english` 分别核对。网页上没有删除，只能编辑；1.0.0 和 1.0.1 已合并为一条"1.0.1 首次公开发布"，另两条空记录（启动器上传、早期页面更新）留着。
-6. **画廊**：`page.json` 的 `gallery` 列出要放进画廊的图（每张小于 1 MB），`steam_page.py --assets` 按文件名更新或新增。现有：中文封面、英文效果图 `gallery-en.jpg`（君士坦丁堡）、中文效果图 `gallery-zh-CN.jpg`（北京）。
-7. **徽章**：描述标题下的 `[img]` 是 `workshop/assets/badges/` 的两张徽章（`render.py` 照搬 EU5 地块，英文"coverage 100% / Bigger UI compatible"，中文"覆盖率 100% / 支持语言 英文 + 简中"），用 `steam_page.py --host-badges` 存进 Steam 云并共享，直链记在 `page.json` 的 `description_badges`；不占画廊，云文件不要删。改了徽章要重新渲染、托管，再把描述里的直链换掉。
+6. **推到 GitHub**（2026-11-04 起公开）：Windows 连不上 GitHub，在 MacBook 上运行研究工程 `tools/push_public.sh`（把 Windows 的 main 打成 bundle、经本机快进推到 GitHub，再对齐 Windows 的 `origin/main`）；发版时加 `--tag <版本>`，推送 `v<版本>` 标签后 `.github/workflows/release.yml` 从该提交构建、核对，并把 ZIP 附到 GitHub Release（说明由 `tools/release_notes.py` 从 CHANGELOG 生成）。推送后核对 Release 里 ZIP 的文件哈希和本地构建回执一致。1.2.0 的 Release 是手动挂的工坊同款 ZIP（标签在 c13a0b6）。
+7. **画廊**：`page.json` 的 `gallery` 列出要放进画廊的图（每张小于 1 MB），`steam_page.py --assets` 按文件名更新或新增。现有：中文封面、英文效果图 `gallery-en.jpg`（君士坦丁堡）、中文效果图 `gallery-zh-CN.jpg`（北京）。
+8. **徽章**：描述标题下的 `[img]` 是 `workshop/assets/badges/` 的两张徽章（`render.py` 照搬 EU5 地块，英文"coverage 100% / Bigger UI compatible"，中文"覆盖率 100% / 支持语言 英文 + 简中"），用 `steam_page.py --host-badges` 存进 Steam 云并共享，直链记在 `page.json` 的 `description_badges`；不占画廊，云文件不要删。改了徽章要重新渲染、托管，再把描述里的直链换掉。
 
 **还要作者确认的事**（不影响构建，但发布前要看）：小分辨率或界面放大时按钮会不会盖住关闭按钮（见研究工程 `tasks/todo.md`「小屏布局」）；工坊描述 2026-11-04 起用作者自己写的版本（中文为作者原稿，英文照它对应；资料来源一句是作者的原话"反复订正"），改文案时保留作者的写法和语气。全部 3,272 条已按新文风重写（亚洲、欧洲 1.1.0，其余 1.2.0），尚未按新标准重新审核。
 
@@ -74,6 +75,8 @@ python -B tools\build.py --verify dist\<新目录>
 | `workshop/assets/` | 封面母版 `cover-master.*.png`（2026-11-04 起由 `cover.py world` 生成：世界地图 ＋ 固定素材 `title.*.png`、`languages.png`；这些素材裁自旧的生图母版，Codex 生图模型按不列颠参考图和 EU5 地块封面画成，提示词在 `cover-prompt.*.txt`）、导出的 `cover.jpg`、`cover.zh-CN.jpg`、`thumbnail.png` |
 | `LICENSE`、`LICENSES/`、`CREDITS.md` | 工具 MIT、正文 CC BY-SA 4.0（照 EU5 地块模组的选择），署名和第三方说明；都会打进模组 |
 | `CHANGELOG.md` | 版本记录，由 `release.py` 写 |
+| `README.md`、`.github/workflows/` | GitHub 公开页的中英文说明；推送时检查构建（`check.yml`），推 `vX.Y.Z` 标签时发布 Release（`release.yml`） |
+| `tools/release_notes.py` | GitHub Release 说明：CHANGELOG 条目 ＋ 安装步骤 ＋ ZIP 的 SHA-256 |
 
 ## 技术要点
 
