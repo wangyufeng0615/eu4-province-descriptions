@@ -1,2 +1,2 @@
-1.0.1
-First public release: descriptions for all 3,272 land provinces.
+1.1.0
+Rewrote the descriptions of 1,960 provinces in Asia and Europe, with more on rulers, famous people, sieges, trade and local legends, and fewer bare dates.

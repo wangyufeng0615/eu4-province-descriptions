@@ -14,7 +14,7 @@ Open any province and hover the scroll button to the right of the terrain pictur
 [*]Can be added to an existing save
 [/list]
 
-Every description is written from published sources, mainly Wikipedia in English and the local language, and was reviewed and corrected entry by entry. If you find a mistake, please leave a comment with the province name. I'll keep maintaining and updating this mod!
+Every description is written from published sources, mainly Wikipedia in English and the local language, and checked against those sources entry by entry. If you find a mistake, please leave a comment with the province name. I'll keep maintaining and updating this mod!
 
 [h2]Good to know[/h2]
 [list]
@@ -31,5 +31,6 @@ Every description is written from published sources, mainly Wikipedia in English
 
 [h2]Update history[/h2]
 [list]
+[*]1.1.0: Rewrote the descriptions of 1,960 provinces in Asia and Europe, with more on rulers, famous people, sieges, trade and local legends, and fewer bare dates.
 [*]1.0.1: First public release.
 [/list]
