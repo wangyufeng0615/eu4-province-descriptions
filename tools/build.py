@@ -21,6 +21,10 @@ python -B tools/build.py --check --game-root "<EU4 安装目录>"   # 另外核�
 未殖民省份不用省份窗口，用 colonisationpanel.gui 里的殖民面板（风景图占满整宽，右边没有空白）。同样的办法写进
 interface/00_eu4lg_colonisationpanel.gui，按钮放在风景图里靠右、和关闭按钮上下对齐（project.json 的 colony_gui）。
 
+成就：游戏校验和只算 checksum_manifest.txt 列出的目录里的 .txt / .lua，本模组在范围内的只有 common/custom_gui 的
+按钮定义。这个文件用大写扩展名 eu4lg.TXT：游戏照样读，校验和和原版一致，铁人模式能拿成就（2026-11-04 在 Windows
+上验证；.Txt、.yml、无扩展名游戏都不读）。Linux 文件系统区分大小写，可能读不到，没测过。
+
 EU4 英文界面只能显示 Windows-1252 字符：英文正文里的 ō、ł、ı、ʻ 等在生成时换成最接近的可显示字母，
 希腊文、汉字等直接去掉（fold_latin1）。中文正文按中文模组字体实际收录的字符处理（fold_latin_in_zh）。
 
@@ -422,7 +426,8 @@ def payload(root, cfg, rows, debug=False):
         custom += (b'custom_button = {\n\tname = eu4lg_wonder_button\n\tpotential = { always = yes }\n'
                    b'\ttooltip = eu4lg_wonder_tt\n}\n')
         gui = add_wonder_button(gui, *cfg.get('wonder_button_pos', (264, 30)))
-    files['common/custom_gui/eu4lg.txt'] = custom
+    # 大写扩展名：游戏照样读，但校验和只算 common/ 下小写 .txt / .lua，铁人成就不受影响（见文件开头）
+    files['common/custom_gui/eu4lg.TXT'] = custom
     files[f'interface/{cfg["gui_file"]}'] = gui.encode('utf-8', errors='surrogateescape')
     c = cfg['colony_gui']
     files[f'interface/{c["file"]}'] = add_colony_button(colony_gui_text(root, cfg), *c['button_pos']).encode(

@@ -86,4 +86,4 @@ python -B tools\build.py --verify dist\<新目录>
 - **按钮不写 trigger**：`custom_button` 里写 `trigger = { always = yes }`，提示框底部会多出一行"✓ 总是"。
 - 中英文都写进 `l_english`；用 `is_mod_active` 检测中文模组，启用时显示中文（2026-11-03 在游戏里证实可用：检测行显示 YES，故意写错名字的对照为 NO）。`zh_mods` 只写了实测过编码一致的 Chinese Language Mod for 1.37；中文模组随游戏版本改名（for 1.38）时要跟着加。
 - 每个省份一条 `province_id = N` 的 `defined_text` 分支，只在悬停按钮时判断。
-- 加了 `common/custom_gui`，会改变校验码，铁人模式拿不到成就；不改校验码的路线 0.1 已证实走不通。
+- **成就**：游戏校验和只算 `checksum_manifest.txt` 列出的目录里的 `.txt`、`.lua`（localisation、customizable_localization、interface、gfx 都不算），本模组在范围内的只有 `common/custom_gui` 的按钮定义。这个文件写成大写扩展名 `common/custom_gui/eu4lg.TXT`：游戏照样读，校验和和原版一致（2026-11-04 Windows 上用探针模组实测：主菜单校验和不变，提示框正常；同时试的 `.Txt`、`.yml`、无扩展名、`.txt_` 游戏都不读，对应按钮被隐藏）。不要改回小写。Mac 文件系统默认不分大小写，应该能读，没测过；Linux 区分大小写，可能读不到（按钮会被隐藏），没测过。待确认：开发版铁人新局成就图标可用；确认后把 README 和 `workshop/player-readme.*` 里"不兼容成就"改成"Windows 已验证兼容成就"，随 1.3.0 发布。
