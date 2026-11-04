@@ -21,6 +21,7 @@ The entries were written from a large body of sources, mostly Wikipedia in the l
 
 [h2]Update history[/h2]
 [list]
+[*]1.2.0: Improved the provinces of the Americas, Africa and Oceania in the same way; every province now uses the new descriptions
 [*]1.1.0: Improved the Asian and European provinces, adding more on rulers, famous people, wars and local legends
 [*]1.0.1: First public release
 [/list]
