@@ -13,9 +13,9 @@ python -B tools/build.py --check --game-root "<EU4 安装目录>"   # 另外核�
 而是把原版省份窗口定义连同按钮写进 interface/00_eu4lg_provinceview.gui。游戏遇到同名窗口用先读到的定义，
 00_ 排在 provinceview.gui 前面，所以装不装 Bigger UI 按钮都在（2026-11-03 在游戏里验证）。
 原版底稿收在 assets/vanilla/provinceview.gui，哈希记在 project.json；游戏更新后用 --game-root 核对。
-奇观：奇观面板（great_projects_window）里加卷轴按钮，对准列表第一行的风景画，悬停显示这个省份全部奇观的介绍
-（data/wonders.jsonl，研究工程 content/wonders/ 导出），一个省份有两座奇观时（巴黎、君士坦丁堡……）各带标题列出。
-两个按钮按条件二选一：省份归玩家（有升级按钮）时放在升级按钮左边，否则放在风景画右上角。
+奇观：奇观面板（great_projects_window）标题栏右端加一个小号卷轴按钮（28×28，GFX_eu4lg_button_small），
+悬停显示这个省份全部奇观的介绍（data/wonders.jsonl，研究工程 content/wonders/ 导出），一省两座时（巴黎、君士坦丁堡……）
+各带标题列出。标题栏不随列表滚动，一座、两座都适用。按钮写在列表之后，后写的画在上层。
 不放进列表每一行：行模板 great_project_entry 不在 province_window / buildings_window 之下，游戏不给它绑定
 脚本按钮，按钮能画出来但没有提示框（2026-11-04 在游戏里验证；支持范围见游戏 common/custom_gui/example.txt）。
 未殖民省份不用省份窗口，用 colonisationpanel.gui 里的殖民面板（风景图占满整宽，右边没有空白）。同样的办法写进
@@ -289,8 +289,8 @@ def add_button(g, x, y):
     return g[:i] + button + g[i:]
 
 
-def add_wonder_button(g, owned, other):
-    """owned / other：省份归玩家（有升级按钮）和不归玩家时的位置，都是相对奇观面板的坐标。"""
+def add_wonder_button(g, x, y):
+    """x, y：相对奇观面板的坐标。"""
     anchor = 'name = "great_projects_window"'
     if g.count(anchor) != 1:
         raise ValueError('原版底稿里找不到唯一的 great_projects_window')
@@ -305,15 +305,15 @@ def add_wonder_button(g, owned, other):
             break
     i = g.index('\n', i) + 1
     i += len(g[i:]) - len(g[i:].lstrip(' \t'))  # 停在下一行的缩进之后
-    button = ''.join(f'''# Descriptions for Every Province: wonder descriptions over the first row's picture
+    button = f'''# Descriptions for Every Province: wonder descriptions, right end of the header
 				guiButtonType = {{
-					name = "{name}"
-					quadTextureSprite = "GFX_eu4lg_button"
+					name = "eu4lg_wonder_button"
+					quadTextureSprite = "GFX_eu4lg_button_small"
 					position = {{ x = {x} y = {y} }}
 					scripted = yes
 				}}
 
-				''' for name, (x, y) in (('eu4lg_wonder_button_owned', owned), ('eu4lg_wonder_button', other)))
+				'''
     return g[:i] + button + g[i:]
 
 
@@ -419,20 +419,22 @@ def payload(root, cfg, rows, debug=False):
               b'\ttooltip = eu4lg_button_tt\n}\n')
     gui = add_button(base_gui_text(root, cfg), *cfg['button_pos'])
     if wonders:
-        for name, pot in (('eu4lg_wonder_button_owned', 'owned_by = FROM'), ('eu4lg_wonder_button', 'NOT = { owned_by = FROM }')):
-            custom += (f'custom_button = {{\n\tname = {name}\n\tpotential = {{ {pot} }}\n'
-                       '\ttooltip = eu4lg_wonder_tt\n}\n').encode()
-        gui = add_wonder_button(gui, tuple(cfg.get('wonder_button_owned_pos', (188, 62))),
-                                tuple(cfg.get('wonder_button_pos', (259, 62))))
+        custom += (b'custom_button = {\n\tname = eu4lg_wonder_button\n\tpotential = { always = yes }\n'
+                   b'\ttooltip = eu4lg_wonder_tt\n}\n')
+        gui = add_wonder_button(gui, *cfg.get('wonder_button_pos', (264, 15)))
     files['common/custom_gui/eu4lg.txt'] = custom
     files[f'interface/{cfg["gui_file"]}'] = gui.encode('utf-8', errors='surrogateescape')
     c = cfg['colony_gui']
     files[f'interface/{c["file"]}'] = add_colony_button(colony_gui_text(root, cfg), *c['button_pos']).encode(
         'utf-8', errors='surrogateescape')
-    files['interface/eu4lg.gfx'] = (b'spriteTypes = {\n\tspriteType = {\n\t\tname = "GFX_eu4lg_button"\n'
-                                    b'\t\ttexturefile = "gfx//interface//eu4lg_button.dds"\n'
-                                    b'\t\teffectFile = "gfx/FX/buttonstate.lua"\n\t\tclicksound = click\n\t}\n}\n')
+    sprite = ('\tspriteType = {{\n\t\tname = "{}"\n\t\ttexturefile = "gfx//interface//{}.dds"\n'
+              '\t\teffectFile = "gfx/FX/buttonstate.lua"\n\t\tclicksound = click\n\t}}\n')
+    files['interface/eu4lg.gfx'] = ('spriteTypes = {\n' + sprite.format('GFX_eu4lg_button', 'eu4lg_button')
+                                    + (sprite.format('GFX_eu4lg_button_small', 'eu4lg_button_small') if wonders else '')
+                                    + '}\n').encode()
     files['gfx/interface/eu4lg_button.dds'] = project_file(root, 'assets/eu4lg_button.dds').read_bytes()
+    if wonders:  # 奇观面板标题栏用的小号按钮，由 eu4lg_button.dds 缩到 28×28
+        files['gfx/interface/eu4lg_button_small.dds'] = project_file(root, 'assets/eu4lg_button_small.dds').read_bytes()
     files['descriptor.mod'] = descriptor(cfg).encode('utf-8')
     files['thumbnail.png'] = project_file(root, cfg['thumbnail_file']).read_bytes()
     for name in LICENSE_FILES:
