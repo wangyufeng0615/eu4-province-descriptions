@@ -1,36 +1,32 @@
 [h1]A history for every province on the map[/h1]
 [img]https://images.steamusercontent.com/ugc/16549542523539939086/92623A5CB15405E0B961E4CEF23DF324462C8D45/[/img]
 
-Vanilla EU4 has no province descriptions at all.
+Adds a description to all [b]3,272 land provinces[/b]: what the place is, how it stood in 1444, and the people and events that shaped it up to 1821.
 
-This mod adds a description to all [b]3,272[/b] land provinces: where the province lies, what it looked like at the 1444 start, and what happened there up to 1821.
-
-Open any province and hover the scroll button to the right of the terrain picture. For uncolonized provinces the button sits at the right end of the picture.
+Open a province and hover the [b]scroll button[/b] next to the terrain picture.
 
 [list]
-[*]French, German and Spanish games show the English text
-[*]Works with and without [url=https://steamcommunity.com/sharedfiles/filedetails/?id=788906833]Bigger UI[/url]
-[*]Only adds text; no gameplay changes
-[*]Can be added to an existing save
+[*]Only adds text, no gameplay changes, works on existing saves
+[*]Works with or without [url=https://steamcommunity.com/sharedfiles/filedetails/?id=788906833]Bigger UI[/url]
+[*][b]Not achievement compatible[/b]: the scripted button changes the game checksum
 [/list]
-
-Every description is written from published sources, mainly Wikipedia in English and the local language, and checked against those sources entry by entry. If you find a mistake, please leave a comment with the province name. I'll keep maintaining and updating this mod!
 
 [h2]Good to know[/h2]
 [list]
-[*]Not achievement compatible: the mod adds a scripted button, which changes the game checksum.
-[*]With Bigger UI enabled, the hotkeys it adds to the province window and the colonization panel do not work; everything else in Bigger UI is unaffected.
-[*]The button is on the Province tab of the province window, not the State tab.
-[*]Descriptions cover 1444–1821 and do not change with the start date.
+[*]French, German and Spanish games show the English text
+[*]With Bigger UI enabled, its hotkeys for the province window and colonization panel don't work; the rest of Bigger UI is unaffected
+[*]The button is on the Province tab, not the State tab
 [/list]
+
+Sources are mainly Wikipedia in English and the local language, and every entry was checked against them. Found a mistake? Leave a comment with the province name and I'll fix it.
 
 [h2]My other mods[/h2]
 [list]
-[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3830305546][b]Descriptions for Every Tile[/b][/url] (Europa Universalis V): descriptions for all 28,316 tiles on the EU5 map. Over 1,700 subscribers in its first four days, and achievement compatible.
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3830305546][b]Descriptions for Every Tile[/b][/url] (Europa Universalis V): descriptions for all 28,316 EU5 tiles, achievement compatible, over 1,700 subscribers in its first four days.
 [/list]
 
 [h2]Update history[/h2]
 [list]
-[*]1.1.0: Rewrote the descriptions of 1,960 provinces in Asia and Europe, with more on rulers, famous people, sieges, trade and local legends, and fewer bare dates.
-[*]1.0.1: First public release.
+[*]1.1.0: Rewrote the Asian and European provinces, with more on rulers, famous people, wars and local legends
+[*]1.0.1: First public release
 [/list]
