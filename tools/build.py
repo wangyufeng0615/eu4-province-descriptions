@@ -421,7 +421,7 @@ def payload(root, cfg, rows, debug=False):
     if wonders:
         custom += (b'custom_button = {\n\tname = eu4lg_wonder_button\n\tpotential = { always = yes }\n'
                    b'\ttooltip = eu4lg_wonder_tt\n}\n')
-        gui = add_wonder_button(gui, *cfg.get('wonder_button_pos', (264, 15)))
+        gui = add_wonder_button(gui, *cfg.get('wonder_button_pos', (264, 30)))
     files['common/custom_gui/eu4lg.txt'] = custom
     files[f'interface/{cfg["gui_file"]}'] = gui.encode('utf-8', errors='surrogateescape')
     c = cfg['colony_gui']
