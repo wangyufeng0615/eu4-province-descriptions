@@ -1,24 +1,18 @@
 [h1]A history for every province on the map[/h1]
 [img]https://images.steamusercontent.com/ugc/16549542523539939086/92623A5CB15405E0B961E4CEF23DF324462C8D45/[/img]
 
-Adds a description to all [b]3,272 land provinces[/b]: what the place is, how it stood in 1444, and the people and events that shaped it up to 1821.
+Adds descriptions to all [b]3,272 provinces[/b]: what the place is, how it stood in 1444, and the people and events that shaped it up to 1821.
 
-Open a province and hover the [b]scroll button[/b] next to the terrain picture.
+[b]How to use: click a province and hover the scroll button next to the terrain picture[/b]
 
+The entries were written from a large body of sources, mostly Wikipedia in the local language, and corrected over several passes. That took a lot of tokens from today's best AI models, but I hope it was worth it! Any feedback is welcome in the comments. Thanks :)
+
+[h2]Features[/h2]
 [list]
-[*]Only adds text, no gameplay changes, works on existing saves
-[*]Works with or without [url=https://steamcommunity.com/sharedfiles/filedetails/?id=788906833]Bigger UI[/url]
-[*][b]Not achievement compatible[/b]: the scripted button changes the game checksum
+[*]Only adds flavour text, nothing else changes, works with existing saves
+[*]Sorry, not compatible with Ironman or achievements; there seems to be no way around it
+[*]Works with Bigger UI and other common UI mods
 [/list]
-
-[h2]Good to know[/h2]
-[list]
-[*]French, German and Spanish games show the English text
-[*]With Bigger UI enabled, its hotkeys for the province window and colonization panel don't work; the rest of Bigger UI is unaffected
-[*]The button is on the Province tab, not the State tab
-[/list]
-
-Sources are mainly Wikipedia in English and the local language, and every entry was checked against them. Found a mistake? Leave a comment with the province name and I'll fix it.
 
 [h2]My other mods[/h2]
 [list]
@@ -27,6 +21,6 @@ Sources are mainly Wikipedia in English and the local language, and every entry 
 
 [h2]Update history[/h2]
 [list]
-[*]1.1.0: Rewrote the Asian and European provinces, with more on rulers, famous people, wars and local legends
+[*]1.1.0: Improved the Asian and European provinces, adding more on rulers, famous people, wars and local legends
 [*]1.0.1: First public release
 [/list]
