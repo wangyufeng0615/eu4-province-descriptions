@@ -295,7 +295,16 @@ def add_wonder_button(g, owned, other):
     if g.count(anchor) != 1:
         raise ValueError('原版底稿里找不到唯一的 great_projects_window')
     start = g.index(anchor)
-    i = g.index('smoothListboxType', start, g.index('name = "great_projects_list"', start))  # 标题之后、列表之前
+    # 放在列表之后：同一窗口里后写的画在上层，写在列表前面会被奇观风景画盖住（2026-11-04 实测）
+    lb = g.index('smoothListboxType', start, g.index('name = "great_projects_list"', start))
+    depth, i = 0, g.index('{', lb)
+    while True:
+        depth += {'{': 1, '}': -1}.get(g[i], 0)
+        i += 1
+        if depth == 0:
+            break
+    i = g.index('\n', i) + 1
+    i += len(g[i:]) - len(g[i:].lstrip(' \t'))  # 停在下一行的缩进之后
     button = ''.join(f'''# Descriptions for Every Province: wonder descriptions over the first row's picture
 				guiButtonType = {{
 					name = "{name}"
