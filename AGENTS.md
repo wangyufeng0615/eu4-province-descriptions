@@ -54,7 +54,7 @@ python -B tools\build.py --verify dist\<新目录>
 6. **画廊**：`page.json` 的 `gallery` 列出要放进画廊的图（每张小于 1 MB），`steam_page.py --assets` 按文件名更新或新增。现有：中文封面、英文效果图 `gallery-en.jpg`（君士坦丁堡）、中文效果图 `gallery-zh-CN.jpg`（北京）。
 7. **徽章**：描述标题下的 `[img]` 是 `workshop/assets/badges/` 的两张徽章（`render.py` 照搬 EU5 地块，英文"coverage 100% / Bigger UI compatible"，中文"覆盖率 100% / 支持语言 英文 + 简中"），用 `steam_page.py --host-badges` 存进 Steam 云并共享，直链记在 `page.json` 的 `description_badges`；不占画廊，云文件不要删。改了徽章要重新渲染、托管，再把描述里的直链换掉。
 
-**还要作者确认的事**（不影响构建，但发布前要看）：小分辨率或界面放大时按钮会不会盖住关闭按钮（见研究工程 `tasks/todo.md`「小屏布局」）；工坊页面写了"逐条审阅订正过"，要等研究工程的审查修复流程跑完再发。
+**还要作者确认的事**（不影响构建，但发布前要看）：小分辨率或界面放大时按钮会不会盖住关闭按钮（见研究工程 `tasks/todo.md`「小屏布局」）；1.1.0（2026-11-04）发布了重写过文风的亚洲、欧洲 1,960 条，这批还没重新审核，所以页面那句暂改为"逐条对照资料核对过 / checked against those sources entry by entry"；按新标准重新审核跑完后再改回"逐条审阅订正过 / reviewed and corrected entry by entry"。
 
 ## 文件
 
