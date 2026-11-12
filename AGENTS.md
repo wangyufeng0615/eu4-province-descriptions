@@ -46,6 +46,8 @@ python -B tools\build.py --verify dist\<新目录>
 
 ## 发布
 
+**统一发版（2026-11-12 起，三个模组相同）**：在 MacBook 的研究工程里运行 `python3 tools/workshop_release.py`（EU5 地块、EU5 人物、EU4 省份三个研究工程各有一份，逐字相同；项目差异写在同目录的 `workshop_release.json`）。先写好 `workshop/changenotes.en.txt`、`changenotes.zh-CN.txt`（第一行版本号）和 `description.*.txt` 的更新记录，然后 `release <版本>` 一步做完，也可以逐步跑：`check`（游戏关、Steam 开、发布工程只有更新说明和数据的改动、说明和更新记录对得上版本）→ `prepare`（导出数据、提交更新说明、`release.py --commit`；**不再 `--install`**）→ `upload`（在桌面会话里用一次性计划任务上传、推页面文案，跑完删任务）→ `publish`（推 GitHub、打 `v<版本>`）→ `verify`（工坊线上大小等于本地构建，GitHub Release 每个文件哈希等于构建回执）→ `notes`（打印补中文更新说明的网址和文字，由 agent 用 Claude in Chrome 填写并核对）。`status` 看版本、线上状态和本机用的是哪一版。本机平时玩工坊订阅版：测试时 `dev-install` 装开发版并让播放集改用它，测完 `dev-remove` 切回工坊版并删掉开发版（工坊副本须已更新到当前版本，改播放集前自动备份）。下面的手工步骤是脚本内部做的事，脚本出问题时备用。
+
 1. **更新数据**：研究工程质量流程跑完后，在 MacBook 上 `tools/sync_workshop.sh` 导出最新正文并装进游戏，进游戏抽看几省（中英文各看、开关 Bigger UI 各看）。
 2. **准备版本**：`python -B tools\release.py 1.0.0 --note "First public release." --install --commit`。它升版本号、写 `CHANGELOG.md`、跑测试和检查、构建到 `dist\release-1.0.0\`、核对、装进游戏并提交。失败会把版本号和 CHANGELOG 改回去。`--dry-run` 只检查和构建。
 3. **第一次上传（作者做）**：工坊条目要由作者建：EU4 启动器 → 模组 → 上传模组，选本机的 `Descriptions for Every Province`（就是第 2 步装进 mod 目录的那份），可见性先选私密或仅好友，标题和描述照 `workshop/description.*.txt`，封面用 `workshop/assets/cover.jpg`。建好后把条目编号填进 `project.json` 的 `publishedfileid` 并提交；之后的构建会在 `descriptor.mod` 里写 `remote_file_id`。
