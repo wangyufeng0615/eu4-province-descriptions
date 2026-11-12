@@ -31,8 +31,7 @@
 [/list]
 
 [h2]致谢[/h2]
-感谢以下玩家在评论区给出的具体反馈：
+感谢以下玩家提出建议，相关改动已发布：
 [list]
-[*][url=https://steamcommunity.com/id/lemon_pop]@POP[/url]：指出伟大工程搬迁后，介绍仍留在原来的省份
-[*][url=https://steamcommunity.com/profiles/76561199028940138]@青沼Azuki[/url]：提出一种不改界面、兼容铁人模式的伟大工程介绍思路
+[*][url=https://space.bilibili.com/3546773974944196]@DGLAB-郊狼[/url]（B 站）：建议加入伟大工程的介绍（1.3.0 加入全部 139 座）
 [/list]
