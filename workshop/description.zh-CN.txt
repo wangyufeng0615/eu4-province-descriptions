@@ -16,6 +16,9 @@
 
 [b]中文玩家请同时订阅并启用 [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2976470733]Chinese Language Mod for 1.37[/url][/b]
 
+[h2]QQ 群[/h2]
+欢迎加入 QQ 群 [b]518622967[/b]，反馈问题、提出建议，一起共建这几个 MOD！
+
 [h2]我的其他 MOD[/h2]
 [list]
 [*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3833397845][b]所有历史人物的描述[/b][/url]（欧陆风云5）：为 7,789 位真实历史人物补上中英文生平，鼠标悬停人物即可看到，兼容铁人和成就。
