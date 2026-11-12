@@ -29,3 +29,10 @@
 [*]1.1.0：完善亚洲和欧洲省份的介绍，补充了帝王、名人、战事和地方传说
 [*]1.0.1：首次公开发布
 [/list]
+
+[h2]致谢[/h2]
+感谢以下玩家在评论区给出的具体反馈：
+[list]
+[*][url=https://steamcommunity.com/id/lemon_pop]@POP[/url]：指出伟大工程搬迁后，介绍仍留在原来的省份
+[*][url=https://steamcommunity.com/profiles/76561199028940138]@青沼Azuki[/url]：提出一种不改界面、兼容铁人模式的伟大工程介绍思路
+[/list]

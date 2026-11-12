@@ -27,3 +27,10 @@ The entries were written from a large body of sources, mostly Wikipedia in the l
 [*]1.1.0: Improved the Asian and European provinces, adding more on rulers, famous people, wars and local legends
 [*]1.0.1: First public release
 [/list]
+
+[h2]Thanks[/h2]
+Thanks to these players for specific feedback in the comments:
+[list]
+[*][url=https://steamcommunity.com/id/lemon_pop]@POP[/url]: pointed out that a great project's description stays in its old province after the project is moved
+[*][url=https://steamcommunity.com/profiles/76561199028940138]@青沼Azuki[/url]: suggested an Ironman-compatible way to describe great projects without changing the UI
+[/list]
