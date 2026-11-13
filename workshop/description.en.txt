@@ -15,9 +15,11 @@ The entries were written from a large body of sources, mostly Wikipedia in the l
 [/list]
 
 [h2]My other mods[/h2]
+[b]Europa Universalis V[/b]: best used all three together
 [list]
-[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3833397845][b]Descriptions for Every Historical Character[/b][/url] (Europa Universalis V): biographies for 7,789 real historical characters, shown at the bottom of the character tooltip. Ironman and achievement compatible.
-[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3830305546][b]Descriptions for Every Tile[/b][/url] (Europa Universalis V): descriptions for all 28,316 EU5 tiles, achievement compatible, over 2,000 subscribers.
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3830305546][b]Descriptions for Every Tile[/b][/url]: descriptions for all 28,316 tiles on the map
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3833397845][b]Descriptions for Every Historical Character[/b][/url]: biographies for 7,789 historical characters, shown on hover
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3838927963][b]Descriptions Expanded: Countries, Cultures, Dynasties & More[/b][/url]: over 7,000 descriptions for countries, cultures, dynasties, religions and more
 [/list]
 
 [h2]Update history[/h2]
